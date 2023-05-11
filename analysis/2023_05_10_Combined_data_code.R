@@ -1,0 +1,64 @@
+rm(list=ls())
+graphics.off()
+
+# Loading packages #
+library(tidyverse)
+library(here) # this package allows you to reproducibly set your directory
+
+# See what here() does (if you open the R Project, it should already be set to
+# the correct root folder)
+here()
+
+# Use here() to set working directory 
+setwd(here("data-raw"))
+
+rdata_EA<-read.csv("prawnz_experiment_reflex_data_entry_EA.csv")
+rdata_KF<-read.csv("prawnz_experiment_reflex_data_entry_KF - prawnz_experiment_reflex_data_entry.csv")
+rdata_KM<-read.csv("prawnz_experiment_reflex_data_entry_KM - prawnz_experiment_reflex_data_entry.csv")
+
+sdata_EA<-read.csv("prawnz_experiment_survival_data_entry_EA.csv")
+sdata_KF<-read.csv("prawnz_experiment_survival_data_entry_KF - prawnz_experiment_survival_data_entry.csv")
+sdata_KM<-read.csv("prawnz_experiment_survival_data_entry_KM - prawnz_experiment_survival_data_entry.csv")
+
+tdata_EA<-read.csv("prawnz_experiment_trial_data_entry_EA.csv")
+tdata_KF<-read.csv("prawnz_experiment_trial_data_entry_KF - prawnz_experiment_trial_data_entry.csv")
+tdata_KM<-read.csv("prawnz_experiment_trial_data_entry_KM - prawnz_experiment_trial_data_entry.csv")
+
+rdata_EA["Person"]<-rep("EA",nrow(rdata_EA))
+rdata_KF["Person"]<-rep("KF",nrow(rdata_KF))
+rdata_KM["Person"]<-rep("KM",nrow(rdata_KM))
+
+sdata_EA["Person"]<-rep("EA",nrow(sdata_EA))
+sdata_KF["Person"]<-rep("KF",nrow(sdata_KF))
+sdata_KM["Person"]<-rep("KM",nrow(sdata_KM))
+
+tdata_EA["Person"]<-rep("EA",nrow(tdata_EA))
+tdata_KF["Person"]<-rep("KF",nrow(tdata_KF))
+tdata_KM["Person"]<-rep("KM",nrow(tdata_KM))
+
+rdata_total<-rbind(rdata_EA, rdata_KF, rdata_KM)
+tdata_total<-rbind(tdata_EA, tdata_KF, tdata_KM)
+sdata_total<-rbind(sdata_EA, sdata_KF, sdata_KM)
+
+attach(tdata_total)
+
+
+tdata_total$exp_set_lat_1<-(5000+as.numeric(sub('...', '', tdata_total$exp_set_lat_1)))/100
+tdata_total$exp_set_lat_2<-(5000+as.numeric(sub('...', '', tdata_total$exp_set_lat_2)))/100
+tdata_total$exp_set_lon_1<-(12600+as.numeric(sub('....', '', tdata_total$exp_set_lon_1)))/100
+tdata_total$exp_set_lon_2<-(12600+as.numeric(sub('....', '', tdata_total$exp_set_lon_2)))/100
+tdata_total$exp_haul_lat_1<-(5000+as.numeric(sub('...', '', tdata_total$exp_haul_lat_1)))/100
+tdata_total$exp_haul_lat_2<-(5000+as.numeric(sub('...', '', tdata_total$exp_haul_lat_2)))/100
+tdata_total$exp_haul_lon_1<-(12600+as.numeric(sub('....', '', tdata_total$exp_haul_lon_1)))/100
+tdata_total$exp_haul_lon_2<-(12600+as.numeric(sub('....', '', tdata_total$exp_haul_lon_2)))/100
+
+sdata_total$All_id<-paste(sdata_total$trial_number,"-",sdata_total$trap_number,"-",sdata_total$prawn_id)
+rdata_total$All_id<-paste(rdata_total$trial_number,"-",rdata_total$trap_number,"-",rdata_total$prawn_id)
+
+setwd(here("data-clean"))
+write.csv(rdata_total,"2023-05-09_prawn_combined_reflex_data")
+write.csv(tdata_total,"2023-05-09_prawn_combined_trial_data")
+write.csv(sdata_total,"2023-05-09_prawn_combined_survival_data")
+
+
+
