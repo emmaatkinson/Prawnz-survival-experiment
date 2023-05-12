@@ -23,12 +23,12 @@ e_edge<-(-1)*min(min(append(trial$exp_set_lon_1,trial$exp_set_lon_2),na.rm=TRUE)
 broughton_map<-ggmap::get_stamenmap(bbox=c(left=w_edge,bottom=s_edge,right=e_edge,top=n_edge),maptype="terrain-background",zoom=12)
 ggmap::ggmap(broughton_map)
 
-ggmap::ggmap(broughton_map) + ggplot2::geom_point(data=df1, ggplot2::aes(x=s_lat_1, y=s_lon_1), size=10)
+ggmap::ggmap(broughton_map) + ggplot2::geom_point(data=df1, ggplot2::aes(x=s_lon_1, y=s_lat_1), size=1)
 
 df1<-data.frame(s_lat_1,s_lon_1)
 
 s_lat_1<-trial$exp_set_lat_1[!is.na(trial$exp_set_lat_1)]
-s_lon_1<-trial$exp_set_lon_1[!is.na(trial$exp_set_lon_1)]
+s_lon_1<--1*trial$exp_set_lon_1[!is.na(trial$exp_set_lon_1)]
 
 
 
