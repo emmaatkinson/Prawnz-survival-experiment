@@ -13,6 +13,22 @@ boxplot(exp_haul_temp_10m)
 boxplot(survival$alive)
 names(reflexes)
 
+unique(survival$stage)
+unique(survival$treatment)
+
+boxplot(length~stage, data = survival)
+
+hist(stage~treatment, data = survival)
+hist(survival$treatment)
+unique(survival$treatment)
+
+nrow(subset(survival,treatment=="T"))
+
+data.frame(survival$stage, survival$treatment)
+
+install.packages('Hmisc')
+Hmisc::hist.data.frame(data.frame(survival$stage, survival$treatment))
+
 
 
 
