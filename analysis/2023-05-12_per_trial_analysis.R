@@ -9,6 +9,13 @@ unbanded<-vector(mode="numeric", length=23)
 scavenged<-vector(mode="numeric", length=23)
 dead<-vector(mode="numeric", length=23)
 
+stage_0_per_trial<-vector(mode="numeric", length=23)
+stage_1_per_trial<-vector(mode="numeric", length=23)
+stage_2_per_trial<-vector(mode="numeric", length=23)
+stage_3_per_trial<-vector(mode="numeric", length=23)
+stage_4_per_trial<-vector(mode="numeric", length=23)
+stage_5_per_trial<-vector(mode="numeric", length=23)
+
 for (i in 1:23){
   trial_number<-i
   
@@ -26,8 +33,34 @@ for (i in 1:23){
   scavenged[i]<-sum(df1$scavenged,na.rm=TRUE)
   dead[i]<-sum(df1$dead,na.rm=TRUE)
 
+  assign(paste0("lengths_",i),sort(df1$length))
   
+  #this is wrong, there are NA's
+  stage_0_per_trial[i]<-nrow(df1[df1$stage==0,])
+  stage_1_per_trial[i]<-nrow(df1[df1$stage==1,])
+  stage_2_per_trial[i]<-nrow(df1[df1$stage==2,])
+  stage_3_per_trial[i]<-nrow(df1[df1$stage==3,])
+  stage_4_per_trial[i]<-nrow(df1[df1$stage==4,])
+  stage_5_per_trial[i]<-nrow(df1[df1$stage==5,])
 }
-trial_df<-data_frame(trial_number, total_treatments, lost_prawnz, unbanded, scavenged, dead)
-  
 
+trial_df<-data_frame(trial_number, total_treatments, lost_prawnz, unbanded, scavenged, dead, stage_0,stage_1,stage_2,stage_3,stage_4,stage_5)
+
+boxplot(lengths_1, lengths_2, lengths_3,lengths_4, lengths_5, lengths_6,lengths_7, lengths_8, lengths_9,lengths_10, lengths_11, lengths_12, lengths_13,lengths_14, lengths_15, lengths_16,lengths_17, lengths_18, lengths_19,lengths_20,lengths_21,lengths_22, lengths_23)
+
+plot(1:23, stage_0_per_trial)
+plot(1:23, stage_1_per_trial)
+plot(1:23, stage_2_per_trial)
+plot(1:23, stage_3_per_trial)
+plot(1:23, stage_4_per_trial)
+plot(1:23, stage_5_per_trial)
+
+
+
+
+
+#for (i in 1:23){
+#pulled<-sum(c(df$immediate_release_number,df$X30min_number,df$X1h_number,df$X1h30min_numner,df$X2h_number), na.rm = TRUE)
+#remain<-((df1$alive, na.rm = TRUE)+sum(df1$scavenged, na.rm = TRUE)+sum(df1$dead, na.rm = TRUE))
+#lost_prawnz[i]<-pulled-remain
+#}

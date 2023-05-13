@@ -31,4 +31,10 @@ Hmisc::hist.data.frame(data.frame(survival$stage, survival$treatment))
 
 
 
+stage_0<-subset(survival, stage==0)
+stage_1<-subset(survival, stage==1)
+stage_2<-subset(survival, stage==2)
+stage_3<-subset(survival, stage==3)
+
+boxplot(stage_0$length,stage_1$length,stage_2$length,stage_3$length)
 
