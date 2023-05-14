@@ -43,14 +43,13 @@ sdata_total<-rbind(sdata_EA, sdata_KF, sdata_KM)
 attach(tdata_total)
 
 
-tdata_total$exp_set_lat_1<-(5000+as.numeric(sub('...', '', tdata_total$exp_set_lat_1)))/100
-tdata_total$exp_set_lat_2<-(5000+as.numeric(sub('...', '', tdata_total$exp_set_lat_2)))/100
-tdata_total$exp_set_lon_1<-(12600+as.numeric(sub('....', '', tdata_total$exp_set_lon_1)))/100
-tdata_total$exp_set_lon_2<-(12600+as.numeric(sub('....', '', tdata_total$exp_set_lon_2)))/100
-tdata_total$exp_haul_lat_1<-(5000+as.numeric(sub('...', '', tdata_total$exp_haul_lat_1)))/100
-tdata_total$exp_haul_lat_2<-(5000+as.numeric(sub('...', '', tdata_total$exp_haul_lat_2)))/100
-tdata_total$exp_haul_lon_1<-(12600+as.numeric(sub('....', '', tdata_total$exp_haul_lon_1)))/100
-tdata_total$exp_haul_lon_2<-(12600+as.numeric(sub('....', '', tdata_total$exp_haul_lon_2)))/100
+tdata_total$exp_set_lat_2<-(50+as.numeric(sub('...', '', tdata_total$exp_set_lat_2))/60)
+tdata_total$exp_set_lon_1<-(126+as.numeric(sub('....', '', tdata_total$exp_set_lon_1))/60)
+tdata_total$exp_set_lon_2<-(126+as.numeric(sub('....', '', tdata_total$exp_set_lon_2))/60)
+tdata_total$exp_haul_lat_1<-(50+as.numeric(sub('...', '', tdata_total$exp_haul_lat_1))/60)
+tdata_total$exp_haul_lat_2<-(50+as.numeric(sub('...', '', tdata_total$exp_haul_lat_2))/60)
+tdata_total$exp_haul_lon_1<-(126+as.numeric(sub('....', '', tdata_total$exp_haul_lon_1))/60)
+tdata_total$exp_haul_lon_2<-(126+as.numeric(sub('....', '', tdata_total$exp_haul_lon_2))/60)
 
 sdata_total$All_id<-paste(sdata_total$trial_number,"-",sdata_total$trap_number,"-",sdata_total$prawn_id)
 rdata_total$All_id<-paste(rdata_total$trial_number,"-",rdata_total$trap_number,"-",rdata_total$prawn_id)
