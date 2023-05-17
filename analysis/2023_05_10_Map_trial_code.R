@@ -45,8 +45,11 @@ broughton_map<-ggmap::get_stamenmap(bbox=c(left=w_edge,bottom=s_edge,right=e_edg
 ggmap::ggmap(broughton_map)
 
 #Apply trial locations to map
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "broughton_map.pdf", sep="_"), width=9, height=8, pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 ggmap::ggmap(broughton_map) + ggplot2::geom_point(data=dfs1, ggplot2::aes(x=s_lon_1, y=s_lat_1), size=1)+ ggplot2::geom_point(data=dfh1, ggplot2::aes(x=h_lon_1, y=h_lat_1), size=1, col="red")+ggplot2::geom_point(data=dfs2, ggplot2::aes(x=s_lon_2, y=s_lat_2), size=1, col="blue")+ ggplot2::geom_point(data=dfh2, ggplot2::aes(x=h_lon_2, y=h_lat_2), size=1, col="green")
-
+dev.off() 
 
 
 

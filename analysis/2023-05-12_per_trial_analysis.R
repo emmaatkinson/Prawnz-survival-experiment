@@ -1,6 +1,7 @@
 survival<-read.csv("2023-05-09_prawn_combined_survival_data")
 trial<-read.csv("2023-05-09_prawn_combined_trial_data")
 attach(survival)
+trial$exp_haul_tote_temp
 
 #set up empty vectors 
 trial_number<-vector(mode="numeric", length=23)
@@ -71,10 +72,16 @@ for (i in 1:23){
 }
 
 #Dataframe of per trial information
-trial_df<-data_frame(trial_number, total_treatments, pulled, remain, lost_prawnz, unbanded, scavenged, dead, alive, stage_0_per_trial,stage_1_per_trial,stage_2_per_trial,stage_3_per_trial)
-trial_df$salinity<-exp_haul_sal_0m
-trial_df$temperature<-rowSums(cbind(exp_set_temp_0m, exp_haul_temp_0m), na.rm=TRUE)/(rep(2, 23)-(is.na(exp_haul_temp_0m)+is.na(exp_set_temp_0m)))
 
+trial_df<-data_frame(trial_number, total_treatments, pulled, remain, lost_prawnz, unbanded, scavenged, dead, alive, stage_0_per_trial,stage_1_per_trial,stage_2_per_trial,stage_3_per_trial)
+
+#Creates a new column in the summary dataframe showing salinity. If haul temp
+#was recorded, salinity takes that value. If not, haul tote temp is the value.
+salinity<-trial$exp_haul_tote_sal
+salinity[is.na(salinity)]<-exp_haul_sal_0m[is.na(salinity)]
+trial_df$salinity<-salinity
+
+trial_df$temperature<-rowSums(cbind(exp_set_temp_0m, exp_haul_temp_0m), na.rm=TRUE)/(rep(2, 23)-(is.na(exp_haul_temp_0m)+is.na(exp_set_temp_0m)))
 
 
 # The maxima and minima of the sums of the alive, dead and scavenged per trial
@@ -82,25 +89,47 @@ max_surv_sum
 min_surv_sum
 
 #boxplot of the length distribution for each trial
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "length_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 boxplot(lengths_1, lengths_2, lengths_3,lengths_4, lengths_5, lengths_6,lengths_7, lengths_8, lengths_9,lengths_10, lengths_11, lengths_12, lengths_13,lengths_14, lengths_15, lengths_16,lengths_17, lengths_18, lengths_19,lengths_20,lengths_21,lengths_22, lengths_23)
+dev.off()
 
 #Number of each stage per trial
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "stage_0_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(1:23, stage_0_per_trial)
+dev.off()
+
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "stage_1_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(1:23, stage_1_per_trial)
+dev.off()
+
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "stage_2_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(1:23, stage_2_per_trial)
+dev.off()
+
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "stage_3_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(1:23, stage_3_per_trial)
+dev.off()
 
 #This shows there is probably no error with the remaining part of the remain
 #part of the lost prawns equation
 remain-(stage_0_per_trial+stage_1_per_trial+stage_2_per_trial+stage_3_per_trial+stage_NA_per_trial)
 
 #lost, dead, scavenged, alive prawns per trial
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "lost_prawns.pdf", sep="_"), width=9, height=8, pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(lost_prawnz)
-
-plot(1:23, 1:300)
-plot(dead,type="l",col="red", ylab="Prawns", xlab="Trial")
-lines(alive,col="green")
-lines(scavenged, col="blue")
+dev.off()
 
 trial_repeated <- c(rep("1" , 3) , rep("2" , 3) , rep("3" , 3) , rep("4" , 3),rep("5" , 3) , rep("6" , 3) , rep("7" , 3) , rep("8" , 3),rep("9" , 3) , rep("10" , 3) , rep("11" , 3) , rep("12" , 3),rep("13" , 3) , rep("14" , 3) , rep("15" , 3) , rep("16" , 3),rep("17" , 3) , rep("18" , 3) , rep("19" , 3) , rep("20" , 3),rep("21" , 3) , rep("22" , 3) , rep("23" , 3))
 condition <- rep(c("Alive" , "Dead" , "Scavenged") , 23)
@@ -110,10 +139,17 @@ prawns[3*i-2]<-alive[i]
 prawns[3*i-1]<-dead[i]
 prawns[3*i]<-scavenged[i]
 }
+
 rep_data<- data.frame(trial_repeated,condition,prawns)
 
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "condition_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 ggplot(rep_data, aes(fill=condition, y=prawns, x=trial_repeated)) + 
   geom_bar(position="stack", stat="identity")
+dev.off()
+
+
 #Percent lost, dead, scavenged, alive prawns per trial
 #NOTE: dead alive and scavenged are shown as proportions of remaining
 #(not including lost) while lost is shown as a proportion of the total 
@@ -138,3 +174,7 @@ lost_prawnz+dead+alive+scavenged-pulled
 
 #SHOULD BE ALL 100
 trial_df$percent_dead+trial_df$percent_alive+trial_df$percent_scavenged
+
+#Write Trial summary dataframe csv
+setwd(here("data-clean"))
+write.csv(trial_df,"2023-05-17_trial_summary.csv")
