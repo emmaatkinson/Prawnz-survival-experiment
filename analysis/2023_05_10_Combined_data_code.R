@@ -54,10 +54,18 @@ tdata_total$exp_haul_lon_2<-(126+as.numeric(sub('....', '', tdata_total$exp_haul
 sdata_total$All_id<-paste(sdata_total$trial_number,"-",sdata_total$trap_number,"-",sdata_total$prawn_id)
 rdata_total$All_id<-paste(rdata_total$trial_number,"-",rdata_total$trap_number,"-",rdata_total$prawn_id)
 
+rdata_total_2<-rdata_total[which(rdata_total$trial_number!=11),]
+tdata_total_2<-tdata_total[which(tdata_total$trial_number!=11),]
+sdata_total_2<-sdata_total[which(sdata_total$trial_number!=11),]
+
+rdata_total_3<-rdata_total_2[which(rdata_total_2$trial_number!=12),]
+tdata_total_3<-tdata_total_2[which(tdata_total_2$trial_number!=12),]
+sdata_total_3<-sdata_total_2[which(sdata_total_2$trial_number!=12),]
+
 setwd(here("data-clean"))
-write.csv(rdata_total,"2023-05-09_prawn_combined_reflex_data.csv")
-write.csv(tdata_total,"2023-05-09_prawn_combined_trial_data.csv")
-write.csv(sdata_total,"2023-05-09_prawn_combined_survival_data.csv")
+write.csv(rdata_total_3,"2023-05-09_prawn_combined_reflex_data.csv")
+write.csv(tdata_total_3,"2023-05-09_prawn_combined_trial_data.csv")
+write.csv(sdata_total_3,"2023-05-09_prawn_combined_survival_data.csv")
 
 
 
