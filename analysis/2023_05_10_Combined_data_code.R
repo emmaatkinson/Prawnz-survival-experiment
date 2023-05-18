@@ -55,9 +55,9 @@ sdata_total$All_id<-paste(sdata_total$trial_number,"-",sdata_total$trap_number,"
 rdata_total$All_id<-paste(rdata_total$trial_number,"-",rdata_total$trap_number,"-",rdata_total$prawn_id)
 
 setwd(here("data-clean"))
-write.csv(rdata_total,"2023-05-09_prawn_combined_reflex_data")
-write.csv(tdata_total,"2023-05-09_prawn_combined_trial_data")
-write.csv(sdata_total,"2023-05-09_prawn_combined_survival_data")
+write.csv(rdata_total,"2023-05-09_prawn_combined_reflex_data.csv")
+write.csv(tdata_total,"2023-05-09_prawn_combined_trial_data.csv")
+write.csv(sdata_total,"2023-05-09_prawn_combined_survival_data.csv")
 
 
 
