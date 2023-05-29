@@ -1,33 +1,49 @@
-survival<-read.csv("2023-05-09_prawn_combined_survival_data")
-trial<-read.csv("2023-05-09_prawn_combined_trial_data")
+library("here")
+setwd(here("data-clean"))
+survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
+trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
 attach(survival)
-trial$exp_haul_tote_temp
+trial<-trial[order(trial$trial_number),]
+
+
+unique(survival$treatment)
+survival[which(survival$treatment=="T"),]
+trial[trial$trial_number==16,]
+n_trials<-length(unique(trial$trial_number))
+
 
 #set up empty vectors 
-trial_number<-vector(mode="numeric", length=23)
-lost_prawnz<-vector(mode="numeric", length=23)
-total_treatments<-vector(mode="numeric", length=23)
-unbanded<-vector(mode="numeric", length=23)
-scavenged<-vector(mode="numeric", length=23)
-dead<-vector(mode="numeric", length=23)
-alive<-vector(mode="numeric", length=23)
-max_surv_sum<-vector(mode="numeric", length=23)
-min_surv_sum<-vector(mode="numeric", length=23)
-pulled<-vector(mode="numeric", length=23)
-remain<-vector(mode="numeric", length=23)
+trial_number<-vector(mode="numeric", length=n_trials)
+lost_prawnz<-vector(mode="numeric", length=n_trials)
+total_treatments<-vector(mode="numeric", length=n_trials)
+unbanded<-vector(mode="numeric", length=n_trials)
+scavenged<-vector(mode="numeric", length=n_trials)
+dead<-vector(mode="numeric", length=n_trials)
+alive<-vector(mode="numeric", length=n_trials)
+max_surv_sum<-vector(mode="numeric", length=n_trials)
+min_surv_sum<-vector(mode="numeric", length=n_trials)
+pulled<-vector(mode="numeric", length=n_trials)
+remain<-vector(mode="numeric", length=n_trials)
+quarts<-vector(mode="numeric", length=n_trials)
 
-stage_0_per_trial<-vector(mode="numeric", length=23)
-stage_1_per_trial<-vector(mode="numeric", length=23)
-stage_2_per_trial<-vector(mode="numeric", length=23)
-stage_3_per_trial<-vector(mode="numeric", length=23)
-stage_NA_per_trial<-vector(mode="numeric", length=23)
+stage_0_per_trial<-vector(mode="numeric", length=n_trials)
+stage_1_per_trial<-vector(mode="numeric", length=n_trials)
+stage_2_per_trial<-vector(mode="numeric", length=n_trials)
+stage_3_per_trial<-vector(mode="numeric", length=n_trials)
+stage_NA_per_trial<-vector(mode="numeric", length=n_trials)
 
-for (i in 1:23){
-  trial_number<-i
-  
+lost_immediate<-vector(mode="numeric", length=n_trials)
+lost_30<-vector(mode="numeric", length=n_trials)
+lost_60<-vector(mode="numeric", length=n_trials)
+lost_90<-vector(mode="numeric", length=n_trials)
+lost_120<-vector(mode="numeric", length=n_trials)
+
+file_names<-vector(mode="character", length=n_trials)
+
+for (i in 1:n_trials){
   #datasets of trial and survival for a trial number
-  df<-subset(trial, trial_number==i)
-  df1<-subset(survival, trial_number==i)
+  df<-subset(trial, trial_number==sort(trial$trial_number)[i])
+  df1<-subset(survival, trial_number==sort(trial$trial_number)[i])
   
   #sum of treatment numbers to ascertain total prawns in each trial
   pulled[i]<-sum(c(df$immediate_release_number,df$X30min_number,df$X1h_number,df$X1h30min_numner,df$X2h_number), na.rm = TRUE)
@@ -39,6 +55,18 @@ for (i in 1:23){
   #lost is the difference for each trial
   lost_prawnz[i]<-pulled[i]-remain[i]
   
+  #quarts stores the 1st quartile for length of each trial
+  quarts[i]<-quantile(df1$length,probs = .25,na.rm = TRUE)
+  
+  #Lost prawns in by treatment, calculated as the number in the treatment at the start minus the
+  #number of prawns with that colour band in the analysis stage. The difference is therefore truly 
+  #lost or unbanded prawns per treatment, for each trial.
+  lost_immediate[i]<-df$immediate_release_number-length(which(df1$treatment=="0"))
+  lost_30[i]<-df$X30min_number-length(which(df1$treatment=="30"))
+  lost_60[i]<-df$X1h_number-length(which(df1$treatment=="60"))
+  lost_90[i]<-df$X1h30min_numner-length(which(df1$treatment=="90"))-length(which(df1$treatment=="100"))
+  lost_120[i]<-df$X2h_number-length(which(df1$treatment=="120"))
+  
   # these vectors are filled with the maxima and minima of the sums of three 
   #survival values for each prawn for a trial. The sums should all be 1
   #because the three are mutually exclusive. Used for checking data was 
@@ -48,10 +76,11 @@ for (i in 1:23){
   
   #number of different treatments for each trial
   total_treatments[i]<-length(unique(df1$treatment))
+  
 
   #unbanded prawns are entered as treatment=NA so the sum of these, per trial
   #is the number of unbanded per trial
-  unbanded[i]<-sum(is.na(df1$treatment))
+  unbanded[i]<-length(which(is.na(df1$treatment)))
 
   #the number of scavenged,dead and alive prawns per trial 
   scavenged[i]<-sum(df1$scavenged,na.rm=TRUE)
@@ -60,7 +89,29 @@ for (i in 1:23){
 
   #vectors of all the prawns lengths is created under the name length_x
   #where x is the trial number
-  assign(paste0("lengths_",i),sort(df1$length))
+  setwd(here("figures"))
+  pdf(paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_"), width=7, height=7, pointsize=12)
+  par(mfrow=c(4,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+  hist(df1$length,main=paste("Trial",df$trial_number,"Total"),xlab="Length")
+  if (df$immediate_release_number>0){hist(subset(df1, treatment=="0")$length, main=paste("Trial",df$trial_number,"Immediate"),xlab="Length")}
+  if (df$X30min_number>0){hist(subset(df1, treatment=="30")$length,main=paste("Trial",df$trial_number,"30 min"),xlab="Length")}
+  if (df$X1h_number>0){hist(subset(df1, treatment=="60")$length,main=paste("Trial",df$trial_number,"60 min"),xlab="Length")}
+  if (df$X1h30min_numner>0){
+    if (nrow(df1[which(df1$treatment=="90"),])>0){hist(subset(df1, treatment=="90")$length,main=paste("Trial",df$trial_number,"90 min"),xlab="Length")}
+    if (nrow(df1[which(df1$treatment=="100"),])>0){hist(subset(df1, treatment=="100")$length,main=paste("Trial",df$trial_number,"100 min"),xlab="Length")}
+  }
+  if (df$X2h_number>0){hist(subset(df1, treatment=="120")$length,main=paste("Trial",df$trial_number,"120 min"),xlab="Length")}
+  if (sum(is.na(df1$treatment))>0){hist(df1[is.na(df1$treatment),]$length,main=paste("Trial",df$trial_number,"Unbanded"),xlab="Length")}
+  plot(NULL, ylim=c(0,1),xlim=c(-5,125), main=paste("Trial",df$trial_number,"Proportion of Treatment Lost"), xlab="Treatment Time", ylab="Proportion of Loss" )
+  points(0,lost_immediate[i]/(df$immediate_release_number))
+  points(30,lost_30[i]/(df$X30min_number))
+  points(60,lost_60[i]/(df$X1h_number))
+  points(90,lost_90[i]/(df$X1h30min_numner))
+  points(120,lost_120[i]/(df$X2h_number))
+  dev.off()
+  
+  file_names[i]<-paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_")
+  
   
   #The number of prawns of each stage per trial 
   stage_0_per_trial[i]<-nrow(subset(df1, stage==0))
@@ -72,8 +123,7 @@ for (i in 1:23){
 }
 
 #Dataframe of per trial information
-
-trial_df<-data_frame(trial_number, total_treatments, pulled, remain, lost_prawnz, unbanded, scavenged, dead, alive, stage_0_per_trial,stage_1_per_trial,stage_2_per_trial,stage_3_per_trial)
+trial_df<-data.frame(sort(trial$trial_number), total_treatments, pulled, remain, lost_prawnz, unbanded, scavenged, dead, alive, stage_0_per_trial,stage_1_per_trial,stage_2_per_trial,stage_3_per_trial)
 
 #Creates a new column in the summary dataframe showing salinity. If haul temp
 #was recorded, salinity takes that value. If not, haul tote temp is the value.
@@ -81,72 +131,64 @@ salinity<-trial$exp_haul_tote_sal
 salinity[is.na(salinity)]<-exp_haul_sal_0m[is.na(salinity)]
 trial_df$salinity<-salinity
 
-trial_df$temperature<-rowSums(cbind(exp_set_temp_0m, exp_haul_temp_0m), na.rm=TRUE)/(rep(2, 23)-(is.na(exp_haul_temp_0m)+is.na(exp_set_temp_0m)))
+trial_df$temperature<-rowSums(cbind(trial$exp_set_temp_0m,trial$exp_haul_temp_0m), na.rm=TRUE)/(rep(2, 21)-(is.na(trial$exp_haul_temp_0m)+is.na(trial$exp_set_temp_0m)))
 
 
 # The maxima and minima of the sums of the alive, dead and scavenged per trial
 max_surv_sum
 min_surv_sum
+test_df<-subset(survival, trial_number==16)
+which.min(test_df$dead+test_df$alive+test_df$scavenged)
+
+#bar graph unbanded for each trial
+setwd(here("figures"))
+png(paste(Sys.Date(), "unbanded_bar.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+barplot(unbanded, xlab="Trial", ylab="Unbanded Prawns")
+dev.off()
 
 #boxplot of the length distribution for each trial
 setwd(here("figures"))
-pdf(paste(Sys.Date(), "length_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-boxplot(lengths_1, lengths_2, lengths_3,lengths_4, lengths_5, lengths_6,lengths_7, lengths_8, lengths_9,lengths_10, lengths_11, lengths_12, lengths_13,lengths_14, lengths_15, lengths_16,lengths_17, lengths_18, lengths_19,lengths_20,lengths_21,lengths_22, lengths_23)
+png(paste(Sys.Date(), "length_trial_boxplot.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+boxplot(lengths_1, lengths_2, lengths_3,lengths_4, lengths_5, lengths_6,lengths_7, lengths_8, lengths_9,lengths_10, lengths_11, lengths_12, lengths_13,lengths_14, lengths_15, lengths_16,lengths_17, lengths_18, lengths_19,lengths_20,lengths_21, names = sort(trial$trial_number))
 dev.off()
 
 #Number of each stage per trial
 setwd(here("figures"))
-pdf(paste(Sys.Date(), "stage_0_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
+png(paste(Sys.Date(), "stage_trial_boxplot.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
 par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plot(1:23, stage_0_per_trial)
+plot(1:n_trials, stage_0_per_trial, xlab="Trial", ylab="Stage 0 Prawns")
+plot(1:n_trials, stage_1_per_trial, xlab="Trial", ylab="Stage 1 Prawns")
+plot(1:n_trials, stage_2_per_trial, xlab="Trial", ylab="Stage 2 Prawns")
+plot(1:n_trials, stage_3_per_trial, xlab="Trial", ylab="Stage 3 Prawns")
 dev.off()
-
-setwd(here("figures"))
-pdf(paste(Sys.Date(), "stage_1_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plot(1:23, stage_1_per_trial)
-dev.off()
-
-setwd(here("figures"))
-pdf(paste(Sys.Date(), "stage_2_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plot(1:23, stage_2_per_trial)
-dev.off()
-
-setwd(here("figures"))
-pdf(paste(Sys.Date(), "stage_3_trial_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plot(1:23, stage_3_per_trial)
-dev.off()
-
-#This shows there is probably no error with the remaining part of the remain
-#part of the lost prawns equation
-remain-(stage_0_per_trial+stage_1_per_trial+stage_2_per_trial+stage_3_per_trial+stage_NA_per_trial)
 
 #lost, dead, scavenged, alive prawns per trial
 setwd(here("figures"))
-pdf(paste(Sys.Date(), "lost_prawns.pdf", sep="_"), width=9, height=8, pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plot(lost_prawnz)
+png(paste(Sys.Date(), "lost_prawns.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+barplot(lost_prawnz, xlab="Trial", ylab="Lost Prawns")
 dev.off()
 
-trial_repeated <- c(rep("1" , 3) , rep("2" , 3) , rep("3" , 3) , rep("4" , 3),rep("5" , 3) , rep("6" , 3) , rep("7" , 3) , rep("8" , 3),rep("9" , 3) , rep("10" , 3) , rep("11" , 3) , rep("12" , 3),rep("13" , 3) , rep("14" , 3) , rep("15" , 3) , rep("16" , 3),rep("17" , 3) , rep("18" , 3) , rep("19" , 3) , rep("20" , 3),rep("21" , 3) , rep("22" , 3) , rep("23" , 3))
-condition <- rep(c("Alive" , "Dead" , "Scavenged") , 23)
-prawns<-vector(mode="numeric", length=69)
-for (i in 1:23){
+trial_repeated <- c(rep("1" , 3) , rep("2" , 3) , rep("3" , 3) , rep("4" , 3),rep("5" , 3) , rep("6" , 3) , rep("7" , 3) , rep("8" , 3),rep("9" , 3) , rep("10" , 3) ,rep("13" , 3) , rep("14" , 3) , rep("15" , 3) , rep("16" , 3),rep("17" , 3) , rep("18" , 3) , rep("19" , 3) , rep("20" , 3),rep("21" , 3) , rep("22" , 3) , rep("23" , 3))
+condition <- rep(c("Alive" , "Dead" , "Scavenged") , n_trials)
+prawns<-vector(mode="numeric", length=n_trials*3)
+for (i in 1:n_trials){
 prawns[3*i-2]<-alive[i]
 prawns[3*i-1]<-dead[i]
 prawns[3*i]<-scavenged[i]
 }
 
 rep_data<- data.frame(trial_repeated,condition,prawns)
-
+alive
+dead
+scavenged
 setwd(here("figures"))
-pdf(paste(Sys.Date(), "condition_boxplot.pdf", sep="_"), width=9, height=8, pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+png(paste(Sys.Date(), "condition_barplot.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 ggplot(rep_data, aes(fill=condition, y=prawns, x=trial_repeated)) + 
-  geom_bar(position="stack", stat="identity")
+  geom_bar(position="stack", stat="identity")+xlab("Trial")+ylab("Prawns")
 dev.off()
 
 
@@ -169,12 +211,80 @@ p2<-ggplot(data=trial_df, aes(x=temperature, y=percent_alive))+geom_point()
 p1
 p2
 
+#Plot of lost per treatment over trial
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "lost_by_treatment.png", sep="_"), width=800, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot(sort(trial$trial_number), lost_30,col='purple', xlab="Trial", ylab="Lost or Unbanded Prawns")
+points(sort(trial$trial_number),lost_120, col='red')
+points(sort(trial$trial_number),lost_60, col='blue')
+points(sort(trial$trial_number),lost_90, col='green')
+points(sort(trial$trial_number),lost_immediate)
+legend(20, 20, legend=c("0 min", "30 min","60 min", "90 min","120 min"),col=c("black","purple", "blue","green", "red"),pch=1, cex=1)
+dev.off()
+
+
+
+
+lost_prawnz-(lost_immediate+lost_30+lost_60+lost_90+lost_120+unbanded)
+
+
+
+
+
+
 #SHOULD BE ALL ZEROES
 lost_prawnz+dead+alive+scavenged-pulled
 
 #SHOULD BE ALL 100
 trial_df$percent_dead+trial_df$percent_alive+trial_df$percent_scavenged
 
+#
+setwd(here("figures"))
+png(paste(Sys.Date(), "lost_vs_quartile.png", sep="_"), width=800, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot(quarts,lost_prawnz, xlab="25th Percentile of Length", ylab="Lost Prawns")
+dev.off()
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "lost_by_treatment_barplot.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+barplot(c(sum(lost_immediate), sum(lost_30),sum(lost_60), sum(lost_90),sum(lost_120)), names=c("0","30","60","90","120"), ylab = "Lost Prawns", xlab="Treatment")
+dev.off()
+
+#NOTE: for graph below there are ~21x5 points. Adding together 5 from the same trial=1. 
+#Points are the proportion of prawns lost from the trial that were lost from that trialxtreatment
+setwd(here("figures"))
+png(paste(Sys.Date(), "lost_by_treatment_and_trial_points.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot(NULL,xlim=c(-5,125),ylim=c(0,1), ylab="Proportion lost or Unbanded", xlab="Treatment Time", main="Proportion of each Treatment Lost")
+points(rep(0,21),lost_immediate/(trial$immediate_release_number))
+points(rep(30,21),lost_30/(trial$X30min_number))
+points(rep(60,21),lost_60/(trial$X1h_number))
+points(rep(90,21),lost_90/(trial$X1h30min_numner))
+points(rep(120,21),lost_120/(trial$X2h_number))
+dev.off()
+
+
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "lost_percent_by_treatment_barplots.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+barplot(c(sum(lost_immediate)/(sum(lost_prawnz)+sum(unbanded)), sum(lost_30)/(sum(lost_prawnz)+sum(unbanded)),sum(lost_60)/(sum(lost_prawnz)+sum(unbanded)), sum(lost_90)/(sum(lost_prawnz)+sum(unbanded)),sum(lost_120)/(sum(lost_prawnz)+sum(unbanded))),names=c("0","30","60","90","120"), main="Proportion of Lost by Treatment")
+barplot(c(sum(lost_immediate)/sum(trial$immediate_release_number), sum(lost_30)/sum(trial$X30min_number),sum(lost_60)/sum(trial$X1h_number), sum(lost_90)/sum(trial$X1h30min_numner),sum(lost_120)/sum(trial$X2h_number)),names=c("0","30","60","90","120"), main="Proportion of each Treatment Lost")
+dev.off()
+
+#MAKE BIG PDF
+install.packages("qpdf")
+qpdf::pdf_combine(input=file_names,output = "2023_05_26_combined_lost_summary.pdf")
+
+
+
+
+
+sum(lost_immediate)/(sum(lost_prawnz)+sum(unbanded))+ sum(lost_30)/(sum(lost_prawnz)+sum(unbanded))+sum(lost_60)/(sum(lost_prawnz)+sum(unbanded))+ sum(lost_90)/(sum(lost_prawnz)+sum(unbanded))+sum(lost_120)/(sum(lost_prawnz)+sum(unbanded))
 #Write Trial summary dataframe csv
 setwd(here("data-clean"))
 write.csv(trial_df,"2023-05-17_trial_summary.csv")
+
