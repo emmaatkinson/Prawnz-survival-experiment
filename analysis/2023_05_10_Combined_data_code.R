@@ -67,5 +67,5 @@ write.csv(rdata_total_3,"2023-05-09_prawn_combined_reflex_data.csv")
 write.csv(tdata_total_3,"2023-05-09_prawn_combined_trial_data.csv")
 write.csv(sdata_total_3,"2023-05-09_prawn_combined_survival_data.csv")
 
-
+getwd()
 

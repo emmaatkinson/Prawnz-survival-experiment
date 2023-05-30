@@ -1,4 +1,5 @@
 library("here")
+library("ggplot2")
 setwd(here("data-clean"))
 survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
 trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
@@ -39,6 +40,7 @@ lost_90<-vector(mode="numeric", length=n_trials)
 lost_120<-vector(mode="numeric", length=n_trials)
 
 file_names<-vector(mode="character", length=n_trials)
+file_names_1<-vector(mode="character", length=n_trials)
 
 for (i in 1:n_trials){
   #datasets of trial and survival for a trial number
@@ -90,8 +92,16 @@ for (i in 1:n_trials){
   #vectors of all the prawns lengths is created under the name length_x
   #where x is the trial number
   setwd(here("figures"))
+  violin_length<-data.frame(length=append(df1[which(df1$stage<=1),]$length,df1[which(df1$stage>1),]$length),sex=append(rep("Juv/Male",length(df1[which(df1$stage<=1),]$length)),rep("Trans/Female",length(df1[which(df1$stage>1),]$length))))
+  violin_length$sex<-as.factor(violin_length$sex)
+  ggplot(violin_length, aes(x=sex, y=length)) + geom_violin()
+  ggsave(paste(Sys.Date(), "trial",df$trial_number, "violin.pdf", sep="_"))
+  
+  file_names_1[i]<-paste(Sys.Date(), "trial",df$trial_number, "violin.pdf", sep="_")
+  
+  setwd(here("figures"))
   pdf(paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_"), width=7, height=7, pointsize=12)
-  par(mfrow=c(4,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+  par(mfrow=c(5,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
   hist(df1$length,main=paste("Trial",df$trial_number,"Total"),xlab="Length")
   if (df$immediate_release_number>0){hist(subset(df1, treatment=="0")$length, main=paste("Trial",df$trial_number,"Immediate"),xlab="Length")}
   if (df$X30min_number>0){hist(subset(df1, treatment=="30")$length,main=paste("Trial",df$trial_number,"30 min"),xlab="Length")}
@@ -108,10 +118,12 @@ for (i in 1:n_trials){
   points(60,lost_60[i]/(df$X1h_number))
   points(90,lost_90[i]/(df$X1h30min_numner))
   points(120,lost_120[i]/(df$X2h_number))
+  barplot(c(sum(is.na(subset(df1,treatment=="0")$length)),sum(is.na(subset(df1,treatment=="30")$length)), sum(is.na(subset(df1,treatment=="60")$length)),sum(is.na(subset(df1,treatment=="90")$length)),sum(is.na(subset(df1,treatment=="120")$length)), sum(is.na(df1[which(is.na(df1$treatment)),]$length))), names=c("0","30","60","90","120","Unbanded"),xlab="Treatment", ylab="Length NA's", main=paste("Prawns without length data: Trial",df$trial_number))
   dev.off()
   
   file_names[i]<-paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_")
   
+
   
   #The number of prawns of each stage per trial 
   stage_0_per_trial[i]<-nrow(subset(df1, stage==0))
@@ -266,8 +278,6 @@ points(rep(90,21),lost_90/(trial$X1h30min_numner))
 points(rep(120,21),lost_120/(trial$X2h_number))
 dev.off()
 
-
-
 setwd(here("figures"))
 png(paste(Sys.Date(), "lost_percent_by_treatment_barplots.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
 par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
@@ -275,10 +285,10 @@ barplot(c(sum(lost_immediate)/(sum(lost_prawnz)+sum(unbanded)), sum(lost_30)/(su
 barplot(c(sum(lost_immediate)/sum(trial$immediate_release_number), sum(lost_30)/sum(trial$X30min_number),sum(lost_60)/sum(trial$X1h_number), sum(lost_90)/sum(trial$X1h30min_numner),sum(lost_120)/sum(trial$X2h_number)),names=c("0","30","60","90","120"), main="Proportion of each Treatment Lost")
 dev.off()
 
-#MAKE BIG PDF
+#MAKE BIG PDFs
 install.packages("qpdf")
-qpdf::pdf_combine(input=file_names,output = "2023_05_26_combined_lost_summary.pdf")
-
+qpdf::pdf_combine(input=file_names,output = paste0(Sys.Date(),"_combined_lost_summary.pdf"))
+qpdf::pdf_combine(input=file_names_1,output = paste0(Sys.Date(),"_combined_violins.pdf"))
 
 
 
@@ -287,4 +297,6 @@ sum(lost_immediate)/(sum(lost_prawnz)+sum(unbanded))+ sum(lost_30)/(sum(lost_pra
 #Write Trial summary dataframe csv
 setwd(here("data-clean"))
 write.csv(trial_df,"2023-05-17_trial_summary.csv")
+
+
 

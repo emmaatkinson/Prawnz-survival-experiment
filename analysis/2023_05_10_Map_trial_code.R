@@ -1,6 +1,7 @@
-reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data")
-survival<-read.csv("2023-05-09_prawn_combined_survival_data")
-trial<-read.csv("2023-05-09_prawn_combined_trial_data")
+reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
+survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
+trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
+
 
 library("tidyverse")
 library("googlesheets4")
@@ -46,11 +47,11 @@ ggmap::ggmap(broughton_map)
 
 #Apply trial locations to map
 setwd(here("figures"))
-pdf(paste(Sys.Date(), "broughton_map.pdf", sep="_"), width=9, height=8, pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-ggmap::ggmap(broughton_map) + ggplot2::geom_point(data=dfs1, ggplot2::aes(x=s_lon_1, y=s_lat_1), size=1)+ ggplot2::geom_point(data=dfh1, ggplot2::aes(x=h_lon_1, y=h_lat_1), size=1, col="red")+ggplot2::geom_point(data=dfs2, ggplot2::aes(x=s_lon_2, y=s_lat_2), size=1, col="blue")+ ggplot2::geom_point(data=dfh2, ggplot2::aes(x=h_lon_2, y=h_lat_2), size=1, col="green")
+png(filename=paste(Sys.Date(), "broughton_map.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggmap::ggmap(broughton_map) + ggplot2::geom_point(data=dfs1, ggplot2::aes(x=s_lon_1, y=s_lat_1), size=1)
 dev.off() 
-
+getwd()
 
 
 
