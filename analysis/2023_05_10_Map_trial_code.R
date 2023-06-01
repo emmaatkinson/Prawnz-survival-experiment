@@ -1,3 +1,4 @@
+setwd("/Users/jacobhoutman/Documents/Git Hub/Prawnz-survival-experiment")
 reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
 survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
 trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")

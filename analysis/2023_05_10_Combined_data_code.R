@@ -7,8 +7,7 @@ library(here) # this package allows you to reproducibly set your directory
 
 # See what here() does (if you open the R Project, it should already be set to
 # the correct root folder)
-here()
-
+setwd("/Users/jacobhoutman/Documents/Git Hub/Prawnz-survival-experiment")
 # Use here() to set working directory 
 setwd(here("data-raw"))
 
@@ -63,6 +62,7 @@ tdata_total_3<-tdata_total_2[which(tdata_total_2$trial_number!=12),]
 sdata_total_3<-sdata_total_2[which(sdata_total_2$trial_number!=12),]
 
 setwd(here("data-clean"))
+
 write.csv(rdata_total_3,"2023-05-09_prawn_combined_reflex_data.csv")
 write.csv(tdata_total_3,"2023-05-09_prawn_combined_trial_data.csv")
 write.csv(sdata_total_3,"2023-05-09_prawn_combined_survival_data.csv")

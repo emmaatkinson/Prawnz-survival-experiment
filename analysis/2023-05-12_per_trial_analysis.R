@@ -9,7 +9,6 @@ trial<-trial[order(trial$trial_number),]
 
 unique(survival$treatment)
 survival[which(survival$treatment=="T"),]
-trial[trial$trial_number==16,]
 n_trials<-length(unique(trial$trial_number))
 
 
@@ -94,14 +93,14 @@ for (i in 1:n_trials){
   setwd(here("figures"))
   violin_length<-data.frame(length=append(df1[which(df1$stage<=1),]$length,df1[which(df1$stage>1),]$length),sex=append(rep("Juv/Male",length(df1[which(df1$stage<=1),]$length)),rep("Trans/Female",length(df1[which(df1$stage>1),]$length))))
   violin_length$sex<-as.factor(violin_length$sex)
-  ggplot(violin_length, aes(x=sex, y=length)) + geom_violin()
+  ggplot(violin_length, aes(x=sex, y=length)) + geom_violin()+ylim(15,55)
   ggsave(paste(Sys.Date(), "trial",df$trial_number, "violin.pdf", sep="_"))
   
   file_names_1[i]<-paste(Sys.Date(), "trial",df$trial_number, "violin.pdf", sep="_")
   
   setwd(here("figures"))
   pdf(paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_"), width=7, height=7, pointsize=12)
-  par(mfrow=c(5,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+  par(mfrow=c(6,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
   hist(df1$length,main=paste("Trial",df$trial_number,"Total"),xlab="Length")
   if (df$immediate_release_number>0){hist(subset(df1, treatment=="0")$length, main=paste("Trial",df$trial_number,"Immediate"),xlab="Length")}
   if (df$X30min_number>0){hist(subset(df1, treatment=="30")$length,main=paste("Trial",df$trial_number,"30 min"),xlab="Length")}
@@ -118,7 +117,9 @@ for (i in 1:n_trials){
   points(60,lost_60[i]/(df$X1h_number))
   points(90,lost_90[i]/(df$X1h30min_numner))
   points(120,lost_120[i]/(df$X2h_number))
-  barplot(c(sum(is.na(subset(df1,treatment=="0")$length)),sum(is.na(subset(df1,treatment=="30")$length)), sum(is.na(subset(df1,treatment=="60")$length)),sum(is.na(subset(df1,treatment=="90")$length)),sum(is.na(subset(df1,treatment=="120")$length)), sum(is.na(df1[which(is.na(df1$treatment)),]$length))), names=c("0","30","60","90","120","Unbanded"),xlab="Treatment", ylab="Length NA's", main=paste("Prawns without length data: Trial",df$trial_number))
+  barplot(c(sum(is.na(subset(df1,treatment=="0")$length)),sum(is.na(subset(df1,treatment=="30")$length)), sum(is.na(subset(df1,treatment=="60")$length)),sum(is.na(subset(df1,treatment=="90")$length)),sum(is.na(subset(df1,treatment=="120")$length)), sum(is.na(df1[which(is.na(df1$treatment)),]$length))), names=c("0","30","60","90","120","Unbanded"),xlab="Treatment", ylab="Length NA's", main=paste("Prawns without length data: Trial",df$trial_number),ylim=c(0,20))
+  barplot(c(sum(is.na(subset(df1,treatment=="0")$stage)),sum(is.na(subset(df1,treatment=="30")$stage)), sum(is.na(subset(df1,treatment=="60")$stage)),sum(is.na(subset(df1,treatment=="90")$stage)),sum(is.na(subset(df1,treatment=="120")$stage)), sum(is.na(df1[which(is.na(df1$treatment)),]$stage))), names=c("0","30","60","90","120","Unbanded"),xlab="Treatment", ylab="Stage NA's", main=paste("Prawns without stage data: Trial",df$trial_number),ylim=c(0,20))
+  barplot(c(df$immediate_release_number, df$X30min_number,df$X1h_number, df$X1h30min_numner,df$X2h_number), names=c("0","30","60","90","120"), ylim = c(0,100))
   dev.off()
   
   file_names[i]<-paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_")
@@ -133,6 +134,11 @@ for (i in 1:n_trials){
   stage_NA_per_trial[i]<-sum(is.na(df1$stage))
 
 }
+
+library("qpdf")
+qpdf::pdf_combine(input=file_names,output = paste0(Sys.Date(),"_combined_lost_summary.pdf"))
+qpdf::pdf_combine(input=file_names_1,output = paste0(Sys.Date(),"_combined_violins.pdf"))
+
 
 #Dataframe of per trial information
 trial_df<-data.frame(sort(trial$trial_number), total_treatments, pulled, remain, lost_prawnz, unbanded, scavenged, dead, alive, stage_0_per_trial,stage_1_per_trial,stage_2_per_trial,stage_3_per_trial)
@@ -286,9 +292,6 @@ barplot(c(sum(lost_immediate)/sum(trial$immediate_release_number), sum(lost_30)/
 dev.off()
 
 #MAKE BIG PDFs
-install.packages("qpdf")
-qpdf::pdf_combine(input=file_names,output = paste0(Sys.Date(),"_combined_lost_summary.pdf"))
-qpdf::pdf_combine(input=file_names_1,output = paste0(Sys.Date(),"_combined_violins.pdf"))
 
 
 

@@ -61,15 +61,9 @@ dev.off()
 
 
 
-
-
-
-
-
-
-plot(NULL, xlim=c(-5,125),ylim=c(0,1),xlab="Treatment", ylab="Proportion Survived", main="Survival with different loss biases")
-legend(x=100,y=1,c("True survival","Dead lost","Alive lost","Equal lost"), pch=c(1,2,3,4), cex=0.5)
-points(c(0, 60, 120), y=c(0.9, 0.6,0.1))
-points(c(0, 60, 120), y=c(0.92, 0.65,0.12), pch = 2)
-points(c(0, 60, 120), y=c(0.88, 0.56,0.082), pch=3)
-points(c(0, 60, 120), y=c(0.9, 0.6,0.1), pch=4)
+#plot(NULL, xlim=c(-5,125),ylim=c(0,1),xlab="Treatment", ylab="Proportion Survived", main="Survival with different loss biases")
+#legend(x=100,y=1,c("True survival","Dead lost","Alive lost","Equal lost"), pch=c(1,2,3,4), cex=0.5)
+#points(c(0, 60, 120), y=c(0.9, 0.6,0.1))
+#points(c(0, 60, 120), y=c(0.92, 0.65,0.12), pch = 2)
+#points(c(0, 60, 120), y=c(0.88, 0.56,0.082), pch=3)
+#points(c(0, 60, 120), y=c(0.9, 0.6,0.1), pch=4)
