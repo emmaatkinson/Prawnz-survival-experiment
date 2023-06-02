@@ -1,0 +1,9 @@
+"","model.name","BIC","deltaBIC","weight","cumul.weight","logLik"
+"1","Treatment + Temperature + Length",4392.87341947759,0,0.972,0.972,-2175.35
+"2","Treatment + Temperature + Length + Treatment x Length + Temperature x Length",4399.95374329221,7.08,0.028,1,-2170.46
+"3","Treatment + Temperature + Treatment x Temperature",4595.67335172213,202.8,0,1,-2276.66
+"4","Treatment + Temperature",4628.24632025874,235.37,0,1,-2297.18
+"5","Treatment",4668.02943344555,275.16,0,1,-2921.98
+"6","Length",5869.25355730939,1476.38,0,1,-2321.31
+"7","Temperature",6160.05504110328,1767.18,0,1,-3067.32
+"8","Null",6198.38299866283,1805.51,0,1,-3090.72
