@@ -1,11 +1,11 @@
-"","model.name","BIC","deltaBIC","weight","cumul.weight","logLik"
-"1","Treatment + Temperature + Treatment x Temperature",4366.75977023758,0,1,1,-2162.3
-"2","Treatment + Temperature + Length",4392.87341947759,26.11,0,1,-2175.35
-"3","Treatment + Temperature",4397.83365146342,31.07,0,1,-2182.05
-"4","Treatment + Temperature + Length + Treatment x Length + Temperature x Length",4399.95374329221,33.19,0,1,-2170.46
-"5","Treatment + Length",4431.09760597074,64.34,0,1,-2198.68
-"6","Treatment",4437.92214918541,71.16,0,1,-2921.98
-"7","Temperature + Length",5831.44344401646,1464.68,0,1,-2898.85
-"8","Temperature",5837.80811000157,1471.05,0,1,-2906.25
-"9","Length",5869.25355730939,1502.49,0,1,-2206.31
-"10","Null",5877.37132990738,1510.61,0,1,-2930.25
+,model.name,BIC,deltaBIC,weight,cumul.weight
+1,Treatment + Temperature + Treatment x Temperature,4366.75977,0,1,1
+2,Treatment + Temperature + Length,4392.873419,26.11,0,1
+3,Treatment + Temperature,4397.833651,31.07,0,1
+4,Treatment + Temperature + Length + Treatment x Length + Temperature x Length,4399.953743,33.19,0,1
+5,Treatment + Length,4431.097606,64.34,0,1
+6,Treatment,4437.922149,71.16,0,1
+7,Temperature + Length,5831.443444,1464.68,0,1
+8,Temperature,5837.80811,1471.05,0,1
+9,Length,5869.253557,1502.49,0,1
+10,Null,5877.37133,1510.61,0,1
