@@ -139,9 +139,10 @@ par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot1
 dev.off()
 
-
-
-
+library(boot)
+b_par<-bootMer(x=model_tti1,FUN=fixef,nsim=200)
+boot.ci(b_par,type="perc",index=1)
+boot(model_tti1, R=5000)
 
 par(mfrow = c(2,2))
 plot(model_tti1)
@@ -179,8 +180,47 @@ means$treatment
 qqnorm(residuals(model_length2))
 
 
+nrow(newdata1)
+newdata1<-expand.grid(temp=c(min_temp,mean(model_df_2$temp),max_temp),treatment=c(0,15,30,45,60,75,90,105,120), trial_trap=levels(model_df_2$trial_trap))
+newdata1$logit_ps <- predict(model_tti1, newdata = newdata1)
+newdata1$ps<-back_trans(newdata1$logit_ps)
+newdata1[order(newdata1$treatment,newdata1$temp),]
+plot(newdata1$treatment,newdata1$ps)
 
+length(levels(newdata1$trial_trap))
+graphics.off()
+setwd(here("figures"))
+png(paste(Sys.Date(), "min_temp_re.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(newdata1[which(newdata1$temp==min_temp),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()#+theme(legend.position = "none") 
+dev.off()
 
+setwd(here("figures"))
+png(paste(Sys.Date(), "mean_temp_re.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(newdata1[which(newdata1$temp==mean(model_df_2$temp)),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+theme(legend.position = "none") 
+dev.off()
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "max_temp_re.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(newdata1[which(newdata1$temp==max_temp),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+theme(legend.position = "none") 
+dev.off()
+
+plot(model_tti1,residuals(.) ~log(fitted(.)))
+ggplot(fortify(model_tt1),
+       aes(x=.fitted,y=sqrt(abs(.scresid))))+geom_point()+
+  geom_smooth(colour="red",alpha=0.3)
+
+dd <- lattice::dotplot(ranef(model_tti1,condVar=TRUE))
+
+do.call(gridExtra::grid.arrange,c(dd,list(nrow=1)))
+par(mfrow=c(1,1))
+ci_best<-confint(profile(model_tti2))
+plot(model_tti1,ylim=c(-3,3),type=c("p","smooth"))
+install.packages('report')
+report::report(model_tti2)
+lme4::qqmath(ranef(model_tti1,condVar=TRUE))
 
 
 

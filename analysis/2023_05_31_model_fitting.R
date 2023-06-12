@@ -11,34 +11,32 @@ trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
 
 #Order trial dataframe
 trial<-trial[order(trial$trial_number),]
-
+temp<-trial$exp_set_temp_air
 #
 model_df<-survival[(is.na(survival$treatment)==FALSE),]
 model_df$treatment<-as.integer(model_df$treatment)
 model_df<-model_df[order(model_df$trial_number,model_df$prawn_id),]
 model_df$trial_trap<-paste(model_df$trial_number,"-",model_df$trap_number)
-unique(model_df$trial_trap)
+
 
 model_df_1<-model_df[c(-564,-1255),]
-unique(model_df_1$trial_trap)
+
 model_df_1$temp<-rep(0, nrow(model_df_1))
 n_trials<-nrow(trial)
-temp_dummy<-(trial$exp_set_temp_air-mean(trial$exp_set_temp_air))/sqrt(var(trial$exp_set_temp_air))
 for(i in 1:n_trials){
   if(i<11){
-    model_df_1[which(model_df_1$trial_number==i),]$temp<-rep(temp_dummy[i],length(which(model_df_1$trial_number==i)))
+    model_df_1[which(model_df_1$trial_number==i),]$temp<-rep(temp[i],length(which(model_df_1$trial_number==i)))
   }
   if(i>=11){
-    model_df_1[which(model_df_1$trial_number==i+2),]$temp<-rep(temp_dummy[i],length(which(model_df_1$trial_number==i+2)))
+    model_df_1[which(model_df_1$trial_number==i+2),]$temp<-rep(temp[i],length(which(model_df_1$trial_number==i+2)))
   }
 }
-
+unique(model_df_1$temp)
+temp
 model_df_1$trial_trap<-as.factor(model_df_1$trial_trap)
 
 
 model_df_1$length<-round(model_df_1$length/0.5)*0.5
-model_df_1$length<-(model_df_1$length-mean(model_df_1$length, na.rm=TRUE))/sqrt(var(model_df_1$length, na.rm = TRUE))
-
 
 mean(model_df_1$length, na.rm=TRUE)
 install.packages("glmmTMB")
@@ -91,7 +89,6 @@ model_big1<-glmer(alive~treatment+temp+length+temp*length+treatment*length+(1|tr
 model_big2<-glmmTMB(alive~treatment+temp+length+temp*length+treatment*length+(1|trial_trap),data=model_df_2,family=binomial)
 
 
-
 #ANALYSIS AND PLOTTING
 
 back_trans<-function(x){
@@ -104,13 +101,27 @@ back_trans_1<-function(x){
   return(exp(0.3-0.14*x)/(1+exp(0.3-0.14*x)))
 }
 
+par(mfrow=c(2,2))
+plot(model_tti1)
 
-plot(seq(-100,100,1),back_trans_1(seq(-100,100,1)))
+
+
+
+pred0<-predict(model_treatl1,newdata=data.frame(treatment=model.matrix(model_treatl1)[,2],length=model.matrix(model_treatl1)[,3]), re.form=NA)
+plot(model.matrix(model_treatl1)[,],back_trans(pred0))
+
+
+
+pframe<-model.frame(model_tti1)
+model.matrix(formula(model_tti1,fixed.only=TRUE)[-2],pframe)
+
 
 
 
 pframe <- data.frame(trial_trap=factor(levels(model_df_2$trial_trap), levels=levels(model_df_2$trial_trap)))
 cpred1 <- predict(model_length1,re.form=NA,newdata=pframe,type="response")
+
+
 
 easyPredCI <- function(model,newdata=NULL,alpha=0.05) {
   ## baseline prediction, on the linear predictor (logit) scale:
@@ -130,6 +141,10 @@ easyPredCI <- function(model,newdata=NULL,alpha=0.05) {
 }
 cpred1.CI <- easyPredCI(cmod_lme4_L,pframe)
 
+mfrow(2,2)
+plot(model_tti1, type=c(1,2,3,4))
+
+
 
 
 g_pframe <- cbind(expand.grid(year=2004:2006,prev=0:80),Area=1)
@@ -140,6 +155,8 @@ set.seed(101)
 g_bb <- bootMer(gmod_lme4_L,FUN=function(x),predict(x,re.form=NA,newdata=g_pframe,type="response"),nsim=400)
 
 
+p1 <- plot(model_tti1,id=0.05,idLabels=~.obs)
+p2 <- plot(model_tti1,ylim=c(-1.5,1),type=c("p","smooth"))
 
 
 
@@ -162,6 +179,7 @@ g_bb <- bootMer(gmod_lme4_L,FUN=function(x),predict(x,re.form=NA,newdata=g_pfram
 
 
 
+predict(model_length1,re.form=NA,newdata=model.frame(model_length1))
 
 
 easyPredCI <- function(model,newdata=NULL,alpha=0.05) {

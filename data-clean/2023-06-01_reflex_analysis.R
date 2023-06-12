@@ -51,5 +51,5 @@ for (i in 0:4){
 
  quantile(reflexes[which(reflexes$treatment==90),]$total,seq(0.2,0.8,0.2))
 
-
+table(c(0,2),c(0,2))
 

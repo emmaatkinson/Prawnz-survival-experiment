@@ -98,31 +98,31 @@ for (i in 1:n_trials){
   
   file_names_1[i]<-paste(Sys.Date(), "trial",df$trial_number, "violin.pdf", sep="_")
   
-  setwd(here("figures"))
-  pdf(paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_"), width=7, height=7, pointsize=12)
-  par(mfrow=c(6,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-  hist(df1$length,main=paste("Trial",df$trial_number,"Total"),xlab="Length")
-  if (df$immediate_release_number>0){hist(subset(df1, treatment=="0")$length, main=paste("Trial",df$trial_number,"Immediate"),xlab="Length")}
-  if (df$X30min_number>0){hist(subset(df1, treatment=="30")$length,main=paste("Trial",df$trial_number,"30 min"),xlab="Length")}
-  if (df$X1h_number>0){hist(subset(df1, treatment=="60")$length,main=paste("Trial",df$trial_number,"60 min"),xlab="Length")}
-  if (df$X1h30min_numner>0){
-    if (nrow(df1[which(df1$treatment=="90"),])>0){hist(subset(df1, treatment=="90")$length,main=paste("Trial",df$trial_number,"90 min"),xlab="Length")}
-    if (nrow(df1[which(df1$treatment=="100"),])>0){hist(subset(df1, treatment=="100")$length,main=paste("Trial",df$trial_number,"100 min"),xlab="Length")}
-  }
-  if (df$X2h_number>0){hist(subset(df1, treatment=="120")$length,main=paste("Trial",df$trial_number,"120 min"),xlab="Length")}
-  if (sum(is.na(df1$treatment))>0){hist(df1[is.na(df1$treatment),]$length,main=paste("Trial",df$trial_number,"Unbanded"),xlab="Length")}
-  plot(NULL, ylim=c(0,1),xlim=c(-5,125), main=paste("Trial",df$trial_number,"Proportion of Treatment Lost"), xlab="Treatment Time", ylab="Proportion of Loss" )
-  points(0,lost_immediate[i]/(df$immediate_release_number))
-  points(30,lost_30[i]/(df$X30min_number))
-  points(60,lost_60[i]/(df$X1h_number))
-  points(90,lost_90[i]/(df$X1h30min_numner))
-  points(120,lost_120[i]/(df$X2h_number))
-  barplot(c(sum(is.na(subset(df1,treatment=="0")$length)),sum(is.na(subset(df1,treatment=="30")$length)), sum(is.na(subset(df1,treatment=="60")$length)),sum(is.na(subset(df1,treatment=="90")$length)),sum(is.na(subset(df1,treatment=="120")$length)), sum(is.na(df1[which(is.na(df1$treatment)),]$length))), names=c("0","30","60","90","120","Unbanded"),xlab="Treatment", ylab="Length NA's", main=paste("Prawns without length data: Trial",df$trial_number),ylim=c(0,20))
-  barplot(c(sum(is.na(subset(df1,treatment=="0")$stage)),sum(is.na(subset(df1,treatment=="30")$stage)), sum(is.na(subset(df1,treatment=="60")$stage)),sum(is.na(subset(df1,treatment=="90")$stage)),sum(is.na(subset(df1,treatment=="120")$stage)), sum(is.na(df1[which(is.na(df1$treatment)),]$stage))), names=c("0","30","60","90","120","Unbanded"),xlab="Treatment", ylab="Stage NA's", main=paste("Prawns without stage data: Trial",df$trial_number),ylim=c(0,20))
-  barplot(c(df$immediate_release_number, df$X30min_number,df$X1h_number, df$X1h30min_numner,df$X2h_number), names=c("0","30","60","90","120"), ylim = c(0,100))
-  dev.off()
+ # setwd(here("figures"))
+ # pdf(paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_"), width=7, height=7, pointsize=12)
+  #par(mfrow=c(6,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+  #hist(df1$length,main=paste("Trial",df$trial_number,"Total"),xlab="Length")
+  #if (df$immediate_release_number>0){hist(subset(df1, treatment=="0")$length, main=paste("Trial",df$trial_number,"Immediate"),xlab="Length")}
+ # if (df$X30min_number>0){hist(subset(df1, treatment=="30")$length,main=paste("Trial",df$trial_number,"30 min"),xlab="Length")}
+ # if (df$X1h_number>0){hist(subset(df1, treatment=="60")$length,main=paste("Trial",df$trial_number,"60 min"),xlab="Length")}
+ # if (df$X1h30min_numner>0){
+  #  if (nrow(df1[which(df1$treatment=="90"),])>0){hist(subset(df1, treatment=="90")$length,main=paste("Trial",df$trial_number,"90 min"),xlab="Length")}
+  #  if (nrow(df1[which(df1$treatment=="100"),])>0){hist(subset(df1, treatment=="100")$length,main=paste("Trial",df$trial_number,"100 min"),xlab="Length")}
+ # }
+  #if ((df$X2h_number>0)|is.na(df$X2h_number)==FALSE){hist(subset(df1, treatment=="120")$length,main=paste("Trial",df$trial_number,"120 min"),xlab="Length")}
+  #if (sum(is.na(df1$treatment))>0){hist(df1[is.na(df1$treatment),]$length,main=paste("Trial",df$trial_number,"Unbanded"),xlab="Length")}
+  #plot(NULL, ylim=c(0,1),xlim=c(-5,125), main=paste("Trial",df$trial_number,"Proportion of Treatment Lost"), xlab="Treatment Time", ylab="Proportion of Loss" )
+ # points(0,lost_immediate[i]/(df$immediate_release_number))
+ # points(30,lost_30[i]/(df$X30min_number))
+ # points(60,lost_60[i]/(df$X1h_number))
+ # points(90,lost_90[i]/(df$X1h30min_numner))
+ # points(120,lost_120[i]/(df$X2h_number))
+ # barplot(c(sum(is.na(subset(df1,treatment=="0")$length)),sum(is.na(subset(df1,treatment=="30")$length)), sum(is.na(subset(df1,treatment=="60")$length)),sum(is.na(subset(df1,treatment=="90")$length)),sum(is.na(subset(df1,treatment=="120")$length)), sum(is.na(df1[which(is.na(df1$treatment)),]$length))), names=c("0","30","60","90","120","Unbanded"),xlab="Treatment", ylab="Length NA's", main=paste("Prawns without length data: Trial",df$trial_number),ylim=c(0,20))
+ # barplot(c(sum(is.na(subset(df1,treatment=="0")$stage)),sum(is.na(subset(df1,treatment=="30")$stage)), sum(is.na(subset(df1,treatment=="60")$stage)),sum(is.na(subset(df1,treatment=="90")$stage)),sum(is.na(subset(df1,treatment=="120")$stage)), sum(is.na(df1[which(is.na(df1$treatment)),]$stage))), names=c("0","30","60","90","120","Unbanded"),xlab="Treatment", ylab="Stage NA's", main=paste("Prawns without stage data: Trial",df$trial_number),ylim=c(0,20))
+ # barplot(c(df$immediate_release_number, df$X30min_number,df$X1h_number, df$X1h30min_numner,df$X2h_number), names=c("0","30","60","90","120"), ylim = c(0,100))
+ # dev.off()
   
-  file_names[i]<-paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_")
+ # file_names[i]<-paste(Sys.Date(), "trial",df$trial_number, "hist.pdf", sep="_")
   
 
   
@@ -138,8 +138,8 @@ for (i in 1:n_trials){
 library("qpdf")
 qpdf::pdf_combine(input=file_names,output = paste0(Sys.Date(),"_combined_lost_summary.pdf"))
 qpdf::pdf_combine(input=file_names_1,output = paste0(Sys.Date(),"_combined_violins.pdf"))
-
-
+trial$X2h_number
+quantile(survival[which(survival$trial_number==6),]$length,probs = .25,na.rm = TRUE)
 #Dataframe of per trial information
 trial_df<-data.frame(sort(trial$trial_number), total_treatments, pulled, remain, lost_prawnz, unbanded, scavenged, dead, alive, stage_0_per_trial,stage_1_per_trial,stage_2_per_trial,stage_3_per_trial)
 
@@ -151,7 +151,7 @@ trial_df$salinity<-salinity
 
 trial_df$temperature<-rowSums(cbind(trial$exp_set_temp_0m,trial$exp_haul_temp_0m), na.rm=TRUE)/(rep(2, 21)-(is.na(trial$exp_haul_temp_0m)+is.na(trial$exp_set_temp_0m)))
 
-
+quantile()
 # The maxima and minima of the sums of the alive, dead and scavenged per trial
 max_surv_sum
 min_surv_sum
