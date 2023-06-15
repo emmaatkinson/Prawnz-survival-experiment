@@ -1,7 +1,7 @@
 
-#MODEL FITTING TIME 
 library(here)
 setwd(here("data-clean"))
+install.packages("nem")
 
 #Read in dataframe 
 reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
@@ -44,8 +44,7 @@ install.packages("lme4")
 
 library("glmmTMB")
 library("lme4")
-summary(model_ttl1)
-summary(model_big2)
+
 model_df_1
 model_df_2<-model_df_1[is.na(model_df_1$length)==FALSE,]
 #Intercept only model
@@ -123,22 +122,7 @@ cpred1 <- predict(model_length1,re.form=NA,newdata=pframe,type="response")
 
 
 
-easyPredCI <- function(model,newdata=NULL,alpha=0.05) {
-  ## baseline prediction, on the linear predictor (logit) scale:
-  pred0 <- predict(model,re.form=NA,newdata=newdata)
-  ## fixed-effects model matrix for new data
-  X <- model.matrix(formula(model,fixed.only=TRUE)[-2],newdata)
-  beta <- fixef(model) ## fixed-effects coefficients
-  V <- vcov(model)     ## variance-covariance matrix of beta
-  pred.se <- sqrt(diag(X %*% V %*% t(X))) ## std errors of predictions
-  ## inverse-link function
-  linkinv <- family(model)$linkinv
-  ## construct 95% Normal CIs on the link scale and
-  ##  transform back to the response (probability) scale:
-  crit <- -qnorm(alpha/2)
-  linkinv(cbind(conf.low=pred0-crit*pred.se,
-                conf.high=pred0+crit*pred.se))
-}
+
 cpred1.CI <- easyPredCI(cmod_lme4_L,pframe)
 
 mfrow(2,2)
@@ -182,23 +166,6 @@ p2 <- plot(model_tti1,ylim=c(-1.5,1),type=c("p","smooth"))
 predict(model_length1,re.form=NA,newdata=model.frame(model_length1))
 
 
-easyPredCI <- function(model,newdata=NULL,alpha=0.05) {
-  ## baseline prediction, on the linear predictor (logit) scale:
-  pred0 <- predict(model,re.form=NA,newdata=newdata)
-  ## fixed-effects model matrix for new data
-  X <- model.matrix(formula(model,fixed.only=TRUE)[-2],model.frame(model))
-  beta <- fixef(model) ## fixed-effects coefficients
-  V <- vcov(model)     ## variance-covariance matrix of beta
-  pred.se <- sqrt(diag(X %*% V %*% t(X))) ## std errors of predictions
-  ## inverse-link function
-  linkinv <- family(model)$linkinv
-  ## construct 95% Normal CIs on the link scale and
-  ##  transform back to the response (probability) scale:
-  crit <- -qnorm(alpha/2)
-  linkinv(cbind(conf.low=pred0-crit*pred.se,conf.high=pred0+crit*pred.se))
-}
-
-
 plot(sort(model_df_2$length),back_trans(summary(model_length1)$coef[1]+summary(model_length1)$coef[2]*sort(model_df_2$length)),ylim=c(0,1))
 lines(model_df_2$length,easyPredCI(model_length1)[,1])
 lines(model_df_2$length,easyPredCI(model_length1)[,2])
@@ -226,8 +193,8 @@ points(sort(model_df_2$length),back_trans(summary(model_length1)$coef[1]+summary
 
 
 
-
-
+surv_sub<-subset(sdata_total,sdata_total$trial_number==12)
+sum(surv_sub$alive, na.rm=TRUE)/nrow(surv_sub)
 
 
 
@@ -286,7 +253,6 @@ formula(model_big1)
 # Save BIC table 
 setwd(here("figures"))
 write.csv(BIC.table, paste(Sys.Date(),"Prawn_Survival_BIC_table.csv"))
-
 
 
 

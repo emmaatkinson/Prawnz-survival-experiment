@@ -1,16 +1,16 @@
 rm(list=ls())
 graphics.off()
 
-# Loading packages #
+# Loading packages 
 library(tidyverse)
 library(here) # this package allows you to reproducibly set your directory
 
 # See what here() does (if you open the R Project, it should already be set to
 # the correct root folder)
-setwd("/Users/jacobhoutman/Documents/Git Hub/Prawnz-survival-experiment")
 # Use here() to set working directory 
 setwd(here("data-raw"))
 
+#Read in data that is currently seperated by observer 
 rdata_EA<-read.csv("prawnz_experiment_reflex_data_entry_EA.csv")
 rdata_KF<-read.csv("prawnz_experiment_reflex_data_entry_KF - prawnz_experiment_reflex_data_entry.csv")
 rdata_KM<-read.csv("prawnz_experiment_reflex_data_entry_KM - prawnz_experiment_reflex_data_entry.csv")
@@ -23,6 +23,7 @@ tdata_EA<-read.csv("prawnz_experiment_trial_data_entry_EA.csv")
 tdata_KF<-read.csv("prawnz_experiment_trial_data_entry_KF - prawnz_experiment_trial_data_entry.csv")
 tdata_KM<-read.csv("prawnz_experiment_trial_data_entry_KM - prawnz_experiment_trial_data_entry.csv")
 
+#Add a coloumn to indicate observer 
 rdata_EA["Person"]<-rep("EA",nrow(rdata_EA))
 rdata_KF["Person"]<-rep("KF",nrow(rdata_KF))
 rdata_KM["Person"]<-rep("KM",nrow(rdata_KM))
@@ -35,12 +36,12 @@ tdata_EA["Person"]<-rep("EA",nrow(tdata_EA))
 tdata_KF["Person"]<-rep("KF",nrow(tdata_KF))
 tdata_KM["Person"]<-rep("KM",nrow(tdata_KM))
 
+#Merge observer dataframes into one.
 rdata_total<-rbind(rdata_EA, rdata_KF, rdata_KM)
 tdata_total<-rbind(tdata_EA, tdata_KF, tdata_KM)
 sdata_total<-rbind(sdata_EA, sdata_KF, sdata_KM)
 
-attach(tdata_total)
-
+#Con
 tdata_total$exp_set_lat_1<-(50+as.numeric(sub('...', '', tdata_total$exp_set_lat_1))/60)
 tdata_total$exp_set_lat_2<-(50+as.numeric(sub('...', '', tdata_total$exp_set_lat_2))/60)
 tdata_total$exp_set_lon_1<-(126+as.numeric(sub('....', '', tdata_total$exp_set_lon_1))/60)

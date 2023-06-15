@@ -53,3 +53,12 @@ for (i in 0:4){
 
 table(c(0,2),c(0,2))
 
+ref_mat<-matrix(data=NA,nrow=10,ncol=21)
+trials<-unique(reflexes[order(reflexes$trial_number),]$trial_number)
+for (i in 1:21){
+  for(j in 1:10){
+  ref_mat[j,i]<-length(which(reflexes[which(reflexes$trial_number==trials[i]),]$total==j))
+  }
+}
+ref_mat[5:7,]
+

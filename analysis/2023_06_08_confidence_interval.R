@@ -1,112 +1,51 @@
+library(ggplot2)
+library(AICcmodavg)
+library(here)
 
-fit2a<-glm(p.total ~ species, family="poisson", data=FishData)
-fit2.simple<-glm(p.total ~ 1, family="poisson", data=FishData)
-summary(fit2a) #Yes, effect of species IS significant.
+setwd(here("data-clean"))
 
-# LRT test for significance:
-test.stat <- -2*logLik(fit2.simple) - (-2*logLik(fit2a))
-p.val <- pchisq(test.stat, df=1, lower.tail=F)
+survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
+trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
 
-# Avg number of sea lice
-b2a<-summary(fit2a)$coefficients
-est2a1<-c(b2a[1,1], b2a[1,1]+b2a[2,1])
-varc<-b2a[1,2]^2
-varp<-b2a[2,2]^2
-covcp<-vcov(fit2a)[1,2]
-SE.pink<-sqrt(varp+varc+2*covcp)
-SE<-c(b2a[1,2], SE.pink)
+trial<-trial[order(trial$trial_number),]
+temp<-trial$exp_set_temp_air
 
-est2aL<-est2a1-1.96*SE
-est2aU<-est2a1+1.96*SE
-cbind(est2a1,est2aL,est2aU)
+model_df<-survival[(is.na(survival$treatment)==FALSE),]
+model_df$treatment<-as.integer(model_df$treatment)
+model_df<-model_df[order(model_df$trial_number,model_df$prawn_id),]
+model_df$trial_trap<-paste(model_df$trial_number,"-",model_df$trap_number)
 
-modavgPred(list(fit2a),newdata=data.frame(species=c("chum","pink")))
-exp(cbind(est2a1,est2aL,est2aU))
+model_df_1<-model_df[c(-564,-1255),]
+model_df_1$temp<-rep(0, nrow(model_df_1))
+n_trials<-nrow(trial)
 
-
-x<-c(1:120)
-
-b2a<-summary(model_treat1)$coef
-spec_se<-function(x){
-  return(b2a[1,2]^2+(x^2)*b2a[2,2]^2+2*x*vcov(model_treat1)[1,2])
+for(i in 1:n_trials){
+  if(i<11){
+    model_df_1[which(model_df_1$trial_number==i),]$temp<-rep(temp[i],length(which(model_df_1$trial_number==i)))
+  }
+  if(i>=11){
+    model_df_1[which(model_df_1$trial_number==i+2),]$temp<-rep(temp[i],length(which(model_df_1$trial_number==i+2)))
+  }
 }
 
-spec_se(x)
-pred_0<-predict(model_treat1, re.form=NA,newdata =data.frame(treatment=x))
-plot(x,back_trans(pred_0),type = "l")
-lines(x,back_trans(pred_0+spec_se(x)),col="red")
-lines(x,back_trans(pred_0-spec_se(x)),col="blue")
-par(mfrow=c(1,1))
 
-plot(x,pred_0,type = "l")
-lines(x,(pred_0+spec_se(x)),col="red")
-lines(x,back_trans(pred_0-spec_se(x)),col="blue")
+model_df_1$trial_trap<-as.factor(model_df_1$trial_trap)
+model_df_1$length<-round(model_df_1$length/0.5)*0.5
 
+model_df_1
+model_df_2<-model_df_1[is.na(model_df_1$length)==FALSE,]
 
-spec_se<-function(x){
-  return(sqrt(b2a[1,2]^2+(x^2)*b2a[2,2]^2+2*x*vcov(model_treat1)[1,2]))
-}
+q25<-quantile(model_df_2$temp,0.25)
+q75<-quantile(model_df_2$temp,0.75)
 
-predltemp<-predict(model_tt1,data.frame(treatment=c(1:120),temp=(rep(seq(-2,2),24))), interval='none',re.form=NA)
+model_df_cold<-subset(model_df_2, model_df_2$temp<=q25)
+model_df_mean_1<-subset(model_df_2, q25<model_df_2$temp)
+model_df_mean<-subset(model_df_mean_1, q75>model_df_mean_1$temp)
+model_df_hot<- subset(model_df_2, model_df_2$temp>=q75)
 
-
-plot(back_trans(pred0))
-
-
-
-
-pred0<-predict(model_tt1,data.frame(treatment=c(1:120),temp=(rep(0,120))),re.form=NA)
-b2a<-summary(model_tt1)$coefficients
-spec_se<-function(newdata){
-  return(sqrt(b2a[1,2]^2+(newdata[,1]^2)*b2a[2,2]^2+(newdata[,2]^2)*b2a[3,2]^2+2*vcov(model_tt1)[1,2]+2*vcov(model_tt1)[1,3]+2*vcov(model_tt1)[2,3]))
-}
-SE<-spec_se(data.frame(treatment=c(1:120),temp=(rep(0,120))))
-
-plot(pred0,type="l")
-lines(SE+pred0, col="red")
-lines(pred0-SE, col="blue")
-
-plot(back_trans(pred0),type="l")
-lines(back_trans(SE+pred0), col="red")
-lines(back_trans(pred0-SE), col="blue")
-
-
-spec_se<-function(newdata){
-  x1<-newdata[,1]
-  x2<-newdata[,2]
-  return(sqrt(b2a[1,2]^2+(newdata[,1]^2)*b2a[2,2]^2+(newdata[,2]^2)*b2a[3,2]^2+x1*2*vcov(model_tt1)[1,2]+x2*2*vcov(model_tt1)[1,3]+x1*x2*2*vcov(model_tt1)[2,3]))
-}
-
-SE<-spec_se(data.frame(treatment=c(1:120),temp=(rep(0,120))))
-
-plot(pred0,type="l")
-lines(1.96*SE+pred0, col="red")
-lines(-1.96*SE+pred0, col="blue")
-
-plot(back_trans(pred0),type="l")
-lines(back_trans(1.96*SE+pred0), col="red")
-lines(back_trans(-1.96*SE+pred0), col="blue")
-
-CI<-modavgPred(list(model_tt1), newdata=data.frame(temp=rep(mu_temp,120),treatment=c(1:120))) 
-CI1<-modavgPred(list(model_tt1), newdata=data.frame(temp=rep(max_temp,120),treatment=c(1:120))) 
-CI2<-modavgPred(list(model_tt1), newdata=data.frame(temp=rep(min_temp,120),treatment=c(1:120))) 
-
-plot(CI$mod.avg.pred,type="l")
-lines(CI$upper.CL, col="red")
-lines(CI$lower.CL, col="blue")
-
-plot(CI1$mod.avg.pred,type="l")
-lines(CI1$upper.CL, col="red")
-lines(CI1$lower.CL, col="blue")
-
-plot(CI2$mod.avg.pred,type="l")
-lines(CI2$upper.CL, col="red")
-lines(CI2$lower.CL, col="blue")
-
-
-
-
-
+min_temp<-min(trial$exp_set_temp_air)
+mu_temp<-mean(trial$exp_set_temp_air)
+max_temp<-max(trial$exp_set_temp_air)
 
 CI<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(mu_temp,120),treatment=c(1:120))) 
 CI1<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(max_temp,120),treatment=c(1:120))) 
@@ -116,33 +55,170 @@ CI3<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(mu_temp,120),treat
 CI4<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(max_temp,120),treatment=c(1:120)),type="link") 
 CI5<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(min_temp,120),treatment=c(1:120)),type="link") 
 
+colors<-c("Min temp"="black", 'Mean temp'="purple", "Max temp"="hotpink")
+plot_df1<-data.frame(x=1:120,min=CI5$mod.avg.pred,mid=CI3$mod.avg.pred,max=CI4$mod.avg.pred)
+plot_df<-data.frame(x=1:120,min=CI2$mod.avg.pred,mid=CI$mod.avg.pred,max=CI1$mod.avg.pred)
 
+plot1<-ggplot(plot_df1, aes(x=x))+xlim(c(5,120))+ylim(c(-7,3))+geom_line(aes(y=min, color="Min temp"), size = 1)+
+  geom_ribbon(aes(ymin=CI5$lower.CL, ymax=CI5$upper.CL), alpha=0.3, fill = "black",  color = "black", linetype = "dotted")+
+  geom_line(aes(y=mid, colour="Mean temp"), size = 1) +geom_line(aes(y=max, colour="Max temp"), size = 1) +
+  geom_ribbon(aes(ymin=CI4$lower.CL, ymax=CI4$upper.CL), alpha=0.3, fill = "hotpink",  color = "black", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI3$lower.CL, ymax=CI3$upper.CL), alpha=0.3, fill = "purple",  color = "black", linetype = "dotted")+
+  labs(x="Treatment",y="Logit Ps", color="Legend")+scale_color_manual(values = colors)+
+  theme(panel.grid.major.y = element_line(color="grey"), panel.border=element_rect(fill=NA),panel.background = element_rect(fill = "white", colour = "grey50"))+
+  geom_jitter(data=model_df_2,aes(x=treatment,y=trans(alive)), size=0.2, height = 0.03,width=3)
 
-library(ggplot2)
-colors<-c("Min temp"="blue", 'Mean temp'="black", "Max Temp"="red")
-plot_df1<-data.frame(x=1:120,y=seq(-1,3,120/4),min=CI5$mod.avg.pred,mid=CI3$mod.avg.pred,max=CI4$mod.avg.pred)
-plot_df<-data.frame(x=1:120,y=seq(0,1,(1/119)),min=CI2$mod.avg.pred,mid=CI$mod.avg.pred,max=CI1$mod.avg.pred)
-#plot1<-ggplot(plot_df1, aes(x))+xlim(c(0,115))+ylim(c(-2,3))+geom_line(aes(y=min, ), size = 1)+geom_ribbon(aes(ymin=CI5$lower.CL, ymax=CI5$upper.CL), alpha=0.1, fill = "blue",  color = "black", linetype = "dotted")+geom_line(aes(x, mid),color = "black", size = 1) +geom_line(aes(x, max),color = "red", size = 1) +geom_ribbon(aes(ymin=CI4$lower.CL, ymax=CI4$upper.CL), alpha=0.1, fill = "red",  color = "black", linetype = "dotted")+geom_ribbon(aes(ymin=CI3$lower.CL, ymax=CI3$upper.CL), alpha=0.1, fill = "black",  color = "black", linetype = "dotted")+labs(x="Treatment",y="Logit Ps")
-plot2<-ggplot(plot_df, aes(x))+xlim(c(0,115))+ylim(c(0,1))+geom_line(aes(y=min, color="Min temp"), size = 1)+geom_ribbon(aes(ymin=CI2$lower.CL, ymax=CI2$upper.CL), alpha=0.1, fill = "blue",  color = "black", linetype = "dotted")+geom_line(aes(y=mid, color="Mean temp"), size = 1) +geom_line(aes(y=max, color="Max temp"), size = 1) +geom_ribbon(aes(ymin=CI1$lower.CL, ymax=CI1$upper.CL), alpha=0.1, fill = "red",  color = "black", linetype = "dotted")+geom_ribbon(aes(ymin=CI$lower.CL, ymax=CI$upper.CL), alpha=0.1, fill = "green",  color = "black", linetype = "dotted")+labs(x="Treatment",y="Ps", color="Legend")
-
-plot1<-ggplot(plot_df1, aes(x))+xlim(c(0,115))+ylim(c(-5,3))+geom_line(aes(y=min, color="Min temp"), size = 1)+geom_ribbon(aes(ymin=CI5$lower.CL, ymax=CI5$upper.CL), alpha=0.1, fill = "blue",  color = "black", linetype = "dotted")+geom_line(aes(y=mid, colour="Mean temp"), size = 1) +geom_line(aes(y=max, colour="Max temp"), size = 1) +geom_ribbon(aes(ymin=CI4$lower.CL, ymax=CI4$upper.CL), alpha=0.1, fill = "red",  color = "black", linetype = "dotted")+geom_ribbon(aes(ymin=CI3$lower.CL, ymax=CI3$upper.CL), alpha=0.1, fill = "green",  color = "black", linetype = "dotted")+labs(x="Treatment",y="Logit Ps", color="Legend")
+plot2<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="Min temp"), size = 1)+
+  geom_ribbon(aes(ymin=CI2$lower.CL, ymax=CI2$upper.CL), alpha=0.5, fill = "black",  color = "black", linetype = "dotted")+
+  geom_line(aes(y=mid, color="Mean temp"), size = 1) +geom_line(aes(y=max, color="Max temp"), size = 1) +
+  geom_ribbon(aes(ymin=CI1$lower.CL, ymax=CI1$upper.CL), alpha=0.5, fill = "hotpink",  color = "hotpink", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI$lower.CL, ymax=CI$upper.CL), alpha=0.5, fill = "purple",  color = "purple", linetype = "dotted")+
+  labs(x="Treatment",y="Ps", color="Legend")+scale_color_manual(values = colors)+
+  theme(panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))+
+  geom_jitter(data=model_df_cold,aes(x=treatment,y=alive), size=0.2, height = 0.03,width=5,color='black', alpha=0.3)+
+  geom_jitter(data=model_df_mean,aes(x=treatment,y=alive), size=0.2, height = 0.03,width=5,color='purple', alpha=0.2)+
+  geom_jitter(data=model_df_hot,aes(x=treatment,y=alive), size=0.2, height = 0.03,width=5,color='hotpink', alpha=0.2)
 
 setwd(here("figures"))
-png(paste(Sys.Date(), "tti_survival_curve.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
-par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plot2
-dev.off()
-
-setwd(here("figures"))
-png(paste(Sys.Date(), "tti_survival_lines.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
-par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+png(paste(Sys.Date(), "tti_survival_lines_jitter.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot1
 dev.off()
 
-library(boot)
-b_par<-bootMer(x=model_tti1,FUN=fixef,nsim=200)
-boot.ci(b_par,type="perc",index=1)
-boot(model_tti1, R=5000)
+setwd(here("figures"))
+png(paste(Sys.Date(), "tti_survival_curve_jitter.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot2
+dev.off()
+
+
+
+x0<-vector(length=21)
+x30<-vector(length=21)
+x60<-vector(length=21)
+x90<-vector(length=21)
+x120<-vector(length=21)
+
+point_df<-trial
+point_df$quart<-rep(0,21)
+
+point_df[which(point_df$exp_set_temp_air<=q25),]$quart<-"black"
+point_df[which(point_df$exp_set_temp_air>q25),]$quart<-"purple"
+point_df[which(point_df$exp_set_temp_air>=q75),]$quart<-"hotpink"
+
+for (i in c(1:10)){
+trial_df<-subset(model_df_2,model_df_2$trial_number==i)
+x0[i]<-sum(trial_df[which(trial_df$treatment==0),]$alive)/nrow(trial_df[which(trial_df$treatment==0),])
+x30[i]<-sum(trial_df[which(trial_df$treatment==30),]$alive)/nrow(trial_df[which(trial_df$treatment==30),])
+x60[i]<-sum(trial_df[which(trial_df$treatment==60),]$alive)/nrow(trial_df[which(trial_df$treatment==60),])
+x90[i]<-sum(trial_df[which(trial_df$treatment==90),]$alive)/nrow(trial_df[which(trial_df$treatment==90),])
+x120[i]<-sum(trial_df[which(trial_df$treatment==120),]$alive)/nrow(trial_df[which(trial_df$treatment==120),])
+}
+for (i in c(13:23)){
+  trial_df<-subset(model_df_2,model_df_2$trial_number==i)
+  x0[i-2]<-sum(trial_df[which(trial_df$treatment==0),]$alive)/nrow(trial_df[which(trial_df$treatment==0),])
+  x30[i-2]<-sum(trial_df[which(trial_df$treatment==30),]$alive)/nrow(trial_df[which(trial_df$treatment==30),])
+  x60[i-2]<-sum(trial_df[which(trial_df$treatment==60),]$alive)/nrow(trial_df[which(trial_df$treatment==60),])
+  x90[i-2]<-sum(trial_df[which(trial_df$treatment==90),]$alive)/nrow(trial_df[which(trial_df$treatment==90),])
+  x120[i-2]<-sum(trial_df[which(trial_df$treatment==120),]$alive)/nrow(trial_df[which(trial_df$treatment==120),])
+}
+point_df$x0<-x0
+point_df$x30<-x30
+point_df$x60<-x60
+point_df$x90<-x90
+point_df$x120<-x120
+
+model_df_cold<-subset(model_df_2, model_df_2$temp<=q25)
+model_df_mean_1<-subset(model_df_2, q25<model_df_2$temp)
+model_df_mean<-subset(model_df_mean_1, q75>model_df_mean_1$temp)
+model_df_hot<- subset(model_df_2, model_df_2$temp>=q75)
+
+ci_df_cold<-data.frame(treatment=c(0,30,60,90,120),proportion=c(sum(model_df_cold[which(model_df_cold$treatment==0),]$alive)/length(model_df_cold[which(model_df_cold$treatment==0),]$alive),sum(model_df_cold[which(model_df_cold$treatment==30),]$alive)/length(model_df_cold[which(model_df_cold$treatment==30),]$alive),sum(model_df_cold[which(model_df_cold$treatment==60),]$alive)/length(model_df_cold[which(model_df_cold$treatment==60),]$alive),sum(model_df_cold[which(model_df_cold$treatment==90),]$alive)/length(model_df_cold[which(model_df_cold$treatment==90),]$alive),sum(model_df_cold[which(model_df_cold$treatment==120),]$alive)/length(model_df_cold[which(model_df_cold$treatment==120),]$alive)))
+ci_df_mean<-data.frame(treatment=c(0,30,60,90,100,120),proportion=c(sum(model_df_mean[which(model_df_mean$treatment==0),]$alive)/length(model_df_mean[which(model_df_mean$treatment==0),]$alive),sum(model_df_mean[which(model_df_mean$treatment==30),]$alive)/length(model_df_mean[which(model_df_mean$treatment==30),]$alive),sum(model_df_mean[which(model_df_mean$treatment==60),]$alive)/length(model_df_mean[which(model_df_mean$treatment==60),]$alive),sum(model_df_mean[which(model_df_mean$treatment==90),]$alive)/length(model_df_mean[which(model_df_mean$treatment==90),]$alive),sum(model_df_mean[which(model_df_mean$treatment==100),]$alive)/length(model_df_mean[which(model_df_mean$treatment==100),]$alive),sum(model_df_mean[which(model_df_mean$treatment==120),]$alive)/length(model_df_mean[which(model_df_mean$treatment==120),]$alive)))
+ci_df_hot<-data.frame(treatment=c(0,30,60,90,120),proportion=c(sum(model_df_hot[which(model_df_hot$treatment==0),]$alive)/length(model_df_hot[which(model_df_hot$treatment==0),]$alive),sum(model_df_hot[which(model_df_hot$treatment==30),]$alive)/length(model_df_hot[which(model_df_hot$treatment==30),]$alive),sum(model_df_hot[which(model_df_hot$treatment==60),]$alive)/length(model_df_hot[which(model_df_hot$treatment==60),]$alive),sum(model_df_hot[which(model_df_hot$treatment==90),]$alive)/length(model_df_hot[which(model_df_hot$treatment==90),]$alive),sum(model_df_hot[which(model_df_hot$treatment==120),]$alive)/length(model_df_hot[which(model_df_hot$treatment==120),]$alive)))
+
+plot3<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="Min temp"), size = 1)+
+  geom_ribbon(aes(ymin=CI2$lower.CL, ymax=CI2$upper.CL), alpha=0.5, fill = "black",  color = "black", linetype = "dotted")+
+  geom_line(aes(y=mid, color="Mean temp"), size = 1) +geom_line(aes(y=max, color="Max temp"), size = 1) +
+  geom_ribbon(aes(ymin=CI1$lower.CL, ymax=CI1$upper.CL), alpha=0.5, fill = "hotpink",  color = "hotpink", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI$lower.CL, ymax=CI$upper.CL), alpha=0.5, fill = "purple",  color = "purple", linetype = "dotted")+
+  labs(x="Treatment",y="Ps", color="Legend")+scale_color_manual(values = colors)+
+  theme(panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))+
+  geom_point(data=ci_df_cold, aes(x=treatment,y=proportion),color="black")+geom_point(data=ci_df_mean, aes(x=treatment,y=proportion),color="purple")+
+  geom_point(data=ci_df_hot, aes(x=treatment,y=proportion),color="hotpink")
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "tti_survival_curves_average.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot3
+dev.off()
+
+CI10<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(10,120),treatment=c(1:120))) 
+CI14<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(14,120),treatment=c(1:120))) 
+CI18<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(18,120),treatment=c(1:120))) 
+CI22<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(22,120),treatment=c(1:120))) 
+CI26<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(26,120),treatment=c(1:120))) 
+
+colors<-c("10\u00B0C"="black","14\u00B0C"="blue" ,'18\u00B0C'="purple", "22\u00B0C"="hotpink","26\u00B0C"="red")
+plot_df<-data.frame(x=1:120,min=CI10$mod.avg.pred,mid1=CI14$mod.avg.pred,mid2=CI18$mod.avg.pred,max3=CI22$mod.avg.pred,max4=CI26$mod.avg.pred)
+
+plot5<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="10\u00B0C"), size = 1)+  geom_line(aes(y=mid1, color="14\u00B0C"), size = 1) +
+  geom_line(aes(y=mid2, color="18\u00B0C"), size = 1) +geom_line(aes(y=max3, color="22\u00B0C"), size = 1) +geom_line(aes(y=max4, color="26\u00B0C"), size = 1)+
+  geom_ribbon(aes(ymin=CI10$lower.CL, ymax=CI10$upper.CL), alpha=0.5, fill = "black",  color = "black", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI14$lower.CL, ymax=CI14$upper.CL), alpha=0.5, fill = "blue",  color = "blue", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI18$lower.CL, ymax=CI18$upper.CL), alpha=0.5, fill = "purple",  color = "purple", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI22$lower.CL, ymax=CI22$upper.CL), alpha=0.5, fill = "hotpink",  color = "hotpink", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI26$lower.CL, ymax=CI26$upper.CL), alpha=0.5, fill = "red",  color = "red", linetype = "dotted")+
+  labs(x="Treatment",y="Ps", color="Temperature")+scale_color_manual(values = colors)+
+  theme(panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50")) 
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "tti_survival_curves.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot5
+dev.off()
+
+
+
+ggplot(point_df, aes(x=0:120, y=x0))+geom_point(point_df,aes(x=rep(0,21),colour = cut(x0, c(-Inf, q25, q75, Inf))),
+                                                size = 5) +scale_color_manual(name = "x0", values = c("(-Inf,12.8]" = "black",
+                                                                                                      "(12.8,17.8]" = "purple",
+                                                                                                      "(17.8, Inf]" = "hotpink"),
+            
+                                                                                                                                                labels = c("<= 12.8", "12.8 < qsec <= 17.8", "> 17.8"))
+
+
+
+
+
+newdata1<-expand.grid(temp=c(min_temp,mean(model_df_2$temp),max_temp),treatment=c(0,15,30,45,60,75,90,105,120), trial_trap=levels(model_df_2$trial_trap))
+newdata1$logit_ps <- predict(model_tti1, newdata = newdata1)
+newdata1$ps<-back_trans(newdata1$logit_ps)
+newdata1[order(newdata1$treatment,newdata1$temp),]
+plot(newdata1$treatment,newdata1$ps)
+
+
+graphics.off()
+setwd(here("figures"))
+png(paste(Sys.Date(), "min_temp_re.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(newdata1[which(newdata1$temp==min_temp),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+theme(legend.position = "none",panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))
+dev.off()
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "mean_temp_re.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(newdata1[which(newdata1$temp==mean(model_df_2$temp)),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+theme(legend.position = "none", panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))
+dev.off()
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "max_temp_re.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(newdata1[which(newdata1$temp==max_temp),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+theme(legend.position = "none",panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))
+dev.off()
+
+
+#------------SUMMARY PLOTS--------------------------#
 
 par(mfrow = c(2,2))
 plot(model_tti1)
@@ -176,36 +252,10 @@ ggplot(means, aes(x=temp,y=effects)) +
   geom_point() +
   theme_bw()
 
-means$treatment
-qqnorm(residuals(model_length2))
 
 
-nrow(newdata1)
-newdata1<-expand.grid(temp=c(min_temp,mean(model_df_2$temp),max_temp),treatment=c(0,15,30,45,60,75,90,105,120), trial_trap=levels(model_df_2$trial_trap))
-newdata1$logit_ps <- predict(model_tti1, newdata = newdata1)
-newdata1$ps<-back_trans(newdata1$logit_ps)
-newdata1[order(newdata1$treatment,newdata1$temp),]
-plot(newdata1$treatment,newdata1$ps)
 
-length(levels(newdata1$trial_trap))
-graphics.off()
-setwd(here("figures"))
-png(paste(Sys.Date(), "min_temp_re.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
-par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-ggplot(newdata1[which(newdata1$temp==min_temp),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()#+theme(legend.position = "none") 
-dev.off()
 
-setwd(here("figures"))
-png(paste(Sys.Date(), "mean_temp_re.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-ggplot(newdata1[which(newdata1$temp==mean(model_df_2$temp)),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+theme(legend.position = "none") 
-dev.off()
-
-setwd(here("figures"))
-png(paste(Sys.Date(), "max_temp_re.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
-par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
-ggplot(newdata1[which(newdata1$temp==max_temp),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+theme(legend.position = "none") 
-dev.off()
 
 plot(model_tti1,residuals(.) ~log(fitted(.)))
 ggplot(fortify(model_tt1),
@@ -223,4 +273,12 @@ report::report(model_tti2)
 lme4::qqmath(ranef(model_tti1,condVar=TRUE))
 
 
+CI4
+plot4<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="Min temp"), size = 1)+
+  geom_ribbon(aes(ymin=CI2$lower.CL, ymax=CI2$upper.CL), alpha=0.5, fill = "black",  color = "black", linetype = "dotted")+
+  geom_line(aes(y=mid, color="Mean temp"), size = 1) +geom_line(aes(y=max, color="Max temp"), size = 1) +
+  geom_ribbon(aes(ymin=CI1$lower.CL, ymax=CI1$upper.CL), alpha=0.5, fill = "hotpink",  color = "hotpink", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI$lower.CL, ymax=CI$upper.CL), alpha=0.5, fill = "purple",  color = "purple", linetype = "dotted")+
+  labs(x="Treatment",y="Ps", color="Legend")+scale_color_manual(values = colors)+
+  theme(panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50")) 
 
