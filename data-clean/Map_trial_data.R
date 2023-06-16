@@ -1,12 +1,3 @@
-setwd(here("data-clean"))
-getwd()
-
-#Read in dataset
-reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
-survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
-trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
-
-
 library("tidyverse")
 library("googlesheets4")
 library("lubridate")
@@ -14,6 +5,13 @@ library("openintro")
 library("maps")
 library("ggmap")
 
+setwd(here("data-clean"))
+
+
+#Read in dataset
+reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
+survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
+trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
 
 n_edge<-max(max(append(trial$exp_set_lat_1,trial$exp_set_lat_2),na.rm=TRUE), max(append(trial$exp_haul_lat_1,trial$exp_haul_lat_2),na.rm=TRUE)) #select largest latitude, find a northern bound for edge of map
 s_edge<-min(min(append(trial$exp_set_lat_1,trial$exp_set_lat_2),na.rm=TRUE), min(append(trial$exp_haul_lat_1,trial$exp_haul_lat_2),na.rm=TRUE))#smallest latitude, find a southern bound for edge of map
@@ -85,6 +83,6 @@ broughton_map<-ggmap::get_stamenmap(bbox=c(left=w_edge,bottom=s_edge,right=e_edg
 inset_plot<-ggmap::ggmap(broughton_map) + ggplot2::geom_point(data=map_df1, ggplot2::aes(y=s_lat_1, x=s_lon_1), size=1)
 ggmap(broughton_map)
 # Add the inset map to the main plot
-vp <- v  iewport(width = 0.3, height = 0.3, x = 0.8, y = 0.2)
+vp <- viewport(width = 0.3, height = 0.3, x = 0.8, y = 0.2)
 ggmap(main_plot)
 ggmap(broughton_map, vp = vp)

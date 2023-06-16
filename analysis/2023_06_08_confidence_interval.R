@@ -373,3 +373,39 @@ png(paste(Sys.Date(), "survival_by_length.png", sep="_"), width=3000, height=200
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot8
 dev.off()
+
+
+temp_quant<-quantile(model_df_2$temp)
+length_quant<-quantile(model_df_2$length)
+
+newdata2<-expand.grid(length=c(length_quant[2],length_quant[4]),temp=c(temp_quant[2],temp_quant[4]),treatment=c(0,15,30,45,60,75,90,105,120), trial_trap=levels(model_df_2$trial_trap))
+newdata2$logit_ps <- predict(model_6.1_1, newdata = newdata2)
+newdata2$ps<-back_trans(newdata2$logit_ps)
+newdata2[order(newdata2$treatment,newdata2$temp),]
+
+low_temp<-newdata2[which(newdata2$temp==temp_quant[2]),]
+high_temp<-newdata2[which(newdata2$temp==temp_quant[4]),]
+graphics.off()
+setwd(here("figures"))
+png(paste(Sys.Date(), "low_temp_short_re.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(low_temp[which(low_temp$length==length_quant[2]),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+labs(title="1st quartile length 1st quartile temp")+theme(legend.position = "none",panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))
+dev.off()
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "low_temp_long_re.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(low_temp[which(low_temp$length==length_quant[4]),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+labs(title="3rd quartile length 1st quartile temp")+theme(legend.position = "none",panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))
+dev.off()
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "high_temp_short_re.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(high_temp[which(high_temp$length==length_quant[2]),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+labs(title="1st quartile length 3rd quartile temp")+theme(legend.position = "none",panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))
+dev.off()
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "high_temp_long_re.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+ggplot(high_temp[which(high_temp$length==length_quant[4]),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+labs(title="3rd quartile length 3rd quartile temp")+theme(legend.position = "none",panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))
+dev.off()
