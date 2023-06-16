@@ -137,6 +137,14 @@ ci_df_cold<-data.frame(treatment=c(0,30,60,90,120),proportion=c(sum(model_df_col
 ci_df_mean<-data.frame(treatment=c(0,30,60,90,100,120),proportion=c(sum(model_df_mean[which(model_df_mean$treatment==0),]$alive)/length(model_df_mean[which(model_df_mean$treatment==0),]$alive),sum(model_df_mean[which(model_df_mean$treatment==30),]$alive)/length(model_df_mean[which(model_df_mean$treatment==30),]$alive),sum(model_df_mean[which(model_df_mean$treatment==60),]$alive)/length(model_df_mean[which(model_df_mean$treatment==60),]$alive),sum(model_df_mean[which(model_df_mean$treatment==90),]$alive)/length(model_df_mean[which(model_df_mean$treatment==90),]$alive),sum(model_df_mean[which(model_df_mean$treatment==100),]$alive)/length(model_df_mean[which(model_df_mean$treatment==100),]$alive),sum(model_df_mean[which(model_df_mean$treatment==120),]$alive)/length(model_df_mean[which(model_df_mean$treatment==120),]$alive)))
 ci_df_hot<-data.frame(treatment=c(0,30,60,90,120),proportion=c(sum(model_df_hot[which(model_df_hot$treatment==0),]$alive)/length(model_df_hot[which(model_df_hot$treatment==0),]$alive),sum(model_df_hot[which(model_df_hot$treatment==30),]$alive)/length(model_df_hot[which(model_df_hot$treatment==30),]$alive),sum(model_df_hot[which(model_df_hot$treatment==60),]$alive)/length(model_df_hot[which(model_df_hot$treatment==60),]$alive),sum(model_df_hot[which(model_df_hot$treatment==90),]$alive)/length(model_df_hot[which(model_df_hot$treatment==90),]$alive),sum(model_df_hot[which(model_df_hot$treatment==120),]$alive)/length(model_df_hot[which(model_df_hot$treatment==120),]$alive)))
 
+back_trans<-function(x){
+  return(exp(x)/(1+exp(x)))
+}
+trans<-function(x){
+  return(log(x/(1-x)))
+}
+
+
 plot3<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="Min temp"), size = 1)+
   geom_ribbon(aes(ymin=CI2$lower.CL, ymax=CI2$upper.CL), alpha=0.5, fill = "black",  color = "black", linetype = "dotted")+
   geom_line(aes(y=mid, color="Mean temp"), size = 1) +geom_line(aes(y=max, color="Max temp"), size = 1) +
@@ -196,7 +204,6 @@ newdata1$logit_ps <- predict(model_tti1, newdata = newdata1)
 newdata1$ps<-back_trans(newdata1$logit_ps)
 newdata1[order(newdata1$treatment,newdata1$temp),]
 plot(newdata1$treatment,newdata1$ps)
-
 
 graphics.off()
 setwd(here("figures"))
@@ -282,3 +289,87 @@ plot4<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="Min temp"), size = 
   labs(x="Treatment",y="Ps", color="Legend")+scale_color_manual(values = colors)+
   theme(panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50")) 
 
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "residuals.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot(model_tti1,type=c("p","smooth"))
+dev.off()
+
+
+ggplot(point_df, aes(x=0:120, y=x0))+geom_point(point_df,aes(x=rep(0,21),colour = cut(x0, c(-Inf, q25, q75, Inf))),
+                                                size = 5) +scale_color_manual(name = "x0", values = c("(-Inf,12.8]" = "black",
+                                                                                                      "(12.8,17.8]" = "purple",
+                                                                                                      "(17.8, Inf]" = "hotpink"),
+                                                                              
+                                                                              labels = c("<= 12.8", "12.8 < qsec <= 17.8", "> 17.8"))
+
+
+
+quantile(model_df_2$temp,na.rm=TRUE)
+
+CInew1<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(18,120),temp=rep(14.1,120),treatment=c(1:120))) 
+CInew2<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(31.5,120),temp=rep(14.1,120),treatment=c(1:120))) 
+CInew3<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(34.25,120),temp=rep(14.1,120),treatment=c(1:120))) 
+CInew4<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(39,120),temp=rep(14.1,120),treatment=c(1:120))) 
+CInew5<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(52.5,120),temp=rep(14.1,120),treatment=c(1:120))) 
+
+
+
+colors<-c("18"="black","31.5"="blue" ,'34.25'="purple", "39"="hotpink","52.5"="red")
+plot_df<-data.frame(x=1:120,min=CInew1$mod.avg.pred,mid1=CInew2$mod.avg.pred,mid2=CInew3$mod.avg.pred,max3=CInew4$mod.avg.pred,max4=CInew5$mod.avg.pred)
+
+plot6<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="18"), size = 1)+  geom_line(aes(y=mid1, color="31.5"), size = 1) +
+  geom_line(aes(y=mid2, color="34.25"), size = 1) +geom_line(aes(y=max3, color="39"), size = 1) +geom_line(aes(y=max4, color="52.5"), size = 1)+
+  geom_ribbon(aes(ymin=CInew1$lower.CL, ymax=CInew1$upper.CL), alpha=0.5, fill = "black",  color = "black", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew2$lower.CL, ymax=CInew2$upper.CL), alpha=0.5, fill = "blue",  color = "blue", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew3$lower.CL, ymax=CInew3$upper.CL), alpha=0.5, fill = "purple",  color = "purple", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew4$lower.CL, ymax=CInew4$upper.CL), alpha=0.5, fill = "hotpink",  color = "hotpink", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew5$lower.CL, ymax=CInew5$upper.CL), alpha=0.5, fill = "red",  color = "red", linetype = "dotted")+
+  labs(x="Treatment",y="Ps", color="Length (cm)")+scale_color_manual(values = colors)+
+  theme(panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50")) 
+
+colors<-c("18"="black","31.5"="blue" , "39"="hotpink","52.5"="red")
+plot_df<-data.frame(x=1:120,min=CInew1$mod.avg.pred,mid1=CInew2$mod.avg.pred,max3=CInew4$mod.avg.pred,max4=CInew5$mod.avg.pred)
+
+
+plot7<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="18"), size = 1)+  geom_line(aes(y=mid1, color="31.5"), size = 1) +
+  geom_line(aes(y=max3, color="39"), size = 1) +geom_line(aes(y=max4, color="52.5"), size = 1)+
+  geom_ribbon(aes(ymin=CInew1$lower.CL, ymax=CInew1$upper.CL), alpha=0.4, fill = "black",  color = "black", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew2$lower.CL, ymax=CInew2$upper.CL), alpha=0.4, fill = "blue",  color = "blue", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew4$lower.CL, ymax=CInew4$upper.CL), alpha=0.4, fill = "hotpink",  color = "hotpink", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew5$lower.CL, ymax=CInew5$upper.CL), alpha=0.4, fill = "red",  color = "red", linetype = "dotted")+
+  labs(x="Treatment",y="Ps", color="Length (cm)", title= "Prawn Survival at 14.1C")+scale_color_manual(values = colors)+
+  theme(plot.title = element_text(hjust = 0.5),panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50")) 
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "survival_by_temp.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot7
+dev.off()
+
+CI10<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(35,120),temp=rep(10,120),treatment=c(1:120))) 
+CI14<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(35,120),temp=rep(14,120),treatment=c(1:120))) 
+CI18<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(35,120),temp=rep(18,120),treatment=c(1:120))) 
+CI22<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(35,120),temp=rep(22,120),treatment=c(1:120))) 
+CI26<-modavgPred(list(model_6.1_1), newdata=data.frame(length=rep(35,120),temp=rep(26,120),treatment=c(1:120))) 
+
+
+colors<-c("10\u00B0C"="black","14\u00B0C"="blue" ,'18\u00B0C'="purple", "22\u00B0C"="hotpink","26\u00B0C"="red")
+plot_df<-data.frame(x=1:120,min=CI10$mod.avg.pred,mid1=CI14$mod.avg.pred,mid2=CI18$mod.avg.pred,max3=CI22$mod.avg.pred,max4=CI26$mod.avg.pred)
+
+plot8<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="10\u00B0C"), size = 1)+  geom_line(aes(y=mid1, color="14\u00B0C"), size = 1) +
+  geom_line(aes(y=mid2, color="18\u00B0C"), size = 1) +geom_line(aes(y=max3, color="22\u00B0C"), size = 1) +geom_line(aes(y=max4, color="26\u00B0C"), size = 1)+
+  geom_ribbon(aes(ymin=CI10$lower.CL, ymax=CI10$upper.CL), alpha=0.5, fill = "black",  color = "black", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI14$lower.CL, ymax=CI14$upper.CL), alpha=0.5, fill = "blue",  color = "blue", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI18$lower.CL, ymax=CI18$upper.CL), alpha=0.5, fill = "purple",  color = "purple", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI22$lower.CL, ymax=CI22$upper.CL), alpha=0.5, fill = "hotpink",  color = "hotpink", linetype = "dotted")+
+  geom_ribbon(aes(ymin=CI26$lower.CL, ymax=CI26$upper.CL), alpha=0.5, fill = "red",  color = "red", linetype = "dotted")+
+  labs(title = "Survival of a 35cm prawn",x="Treatment",y="Ps", color="Temperature")+scale_color_manual(values = colors)+
+  theme(plot.title = element_text(hjust = 0.5),panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50")) 
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "survival_by_length.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot8
+dev.off()

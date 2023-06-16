@@ -269,7 +269,8 @@ setwd(here("figures"))
 png(paste(Sys.Date(), "condition_barplot.png", sep="_"), width=2000, height=2000, units = "px", pointsize=1,res=300)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 ggplot(rep_data, aes(fill=condition, y=prawns, x=trial_repeated)) + 
-  geom_bar(position="stack", stat="identity")+xlab("Trial")+ylab("Prawns")
+  geom_bar(position="stack", stat="identity")+xlab("Trial")+ylab("Prawns")+
+theme(panel.border=element_rect(fill=NA),panel.background = element_rect(fill = "white", colour = "grey50"))
 dev.off()
 
 
@@ -300,8 +301,6 @@ points(sort(trial$trial_number),lost_90, col='green')
 points(sort(trial$trial_number),lost_immediate)
 legend(20, 20, legend=c("0 min", "30 min","60 min", "90 min","120 min"),col=c("black","purple", "blue","green", "red"),pch=1, cex=1)
 dev.off()
-
-
 
 
 #
