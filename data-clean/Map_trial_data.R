@@ -19,6 +19,8 @@ w_edge<-(-1)*max(max(append(trial$exp_set_lon_1,trial$exp_set_lon_2),na.rm=TRUE)
 e_edge<-(-1)*min(min(append(trial$exp_set_lon_1,trial$exp_set_lon_2),na.rm=TRUE), min(append(trial$exp_haul_lon_1,trial$exp_haul_lon_2),na.rm=TRUE))#smallest longitude, find a eastern bound for edge of map
 
 
+
+
 broughton_map<-ggmap::get_stamenmap(bbox=c(left=w_edge,bottom=s_edge,right=e_edge,top=n_edge),maptype="terrain",zoom=12)
 ggmap::ggmap(broughton_map)
 ggmap::ggmap(broughton_map) + ggplot2::geom_point(data=df1, ggplot2::aes(y=s_lat_1, x=s_lon_1), size=1)

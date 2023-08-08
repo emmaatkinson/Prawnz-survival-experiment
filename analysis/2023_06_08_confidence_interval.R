@@ -79,11 +79,7 @@ plot2<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="Min temp"), size = 
   geom_jitter(data=model_df_mean,aes(x=treatment,y=alive), size=0.2, height = 0.03,width=5,color='purple', alpha=0.2)+
   geom_jitter(data=model_df_hot,aes(x=treatment,y=alive), size=0.2, height = 0.03,width=5,color='hotpink', alpha=0.2)
 
-setwd(here("figures"))
-png(paste(Sys.Date(), "tti_survival_lines_jitter.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
-par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plot1
-dev.off()
+
 
 setwd(here("figures"))
 png(paste(Sys.Date(), "tti_survival_curve_jitter.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)

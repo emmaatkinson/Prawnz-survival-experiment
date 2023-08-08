@@ -2,7 +2,7 @@ library(MuMIn)
 library(here)
 
 #set working directory
-setwd(here("data-clean"))
+setwd("/Users/jacobhoutman/Downloads/Git Hub/Prawnz-survival-experiment/data-clean")
 
 
 #Read in dataframe 
@@ -202,17 +202,15 @@ BIC.deltas = deltaFcn(BIC.values)
 BIC.table <- data.frame(
   model.name = BIC.names, BIC=BIC.values,
   deltaBIC = round(BIC.deltas,2),
-  weight = round(BIC.weights,3),
-  cumul.weight = round(BIC.cumul.weights,3),
   logLik = round(BIC.logLik,2))
 formula(model_big1)
 
-
+getwd()
 
 # Save BIC table 
-setwd(here("figures"))
-write.csv(BIC.table, paste(Sys.Date(),"Prawn_Survival_BIC_table.csv"))
-
+setwd("/Users/jacobhoutman/Documents/Git Hub/Prawnz-survival-experiment/figures")
+write.csv(BIC.table, paste(Sys.Date(),"Prawn_Survival_BIC_table_noweights.csv"))
+BIC.table
 
 
 
