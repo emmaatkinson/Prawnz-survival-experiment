@@ -1,7 +1,7 @@
 setwd("/Users/jacobhoutman/Documents/Git Hub/Prawnz-survival-experiment")
-reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
-survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
-trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
+reflexes<-read.csv("data-clean/2023-05-09_prawn_combined_reflex_data.csv")
+survival<-read.csv("data-clean/2023-05-09_prawn_combined_survival_data.csv")
+trial<-read.csv("data-clean/2023-05-09_prawn_combined_trial_data.csv")
 
 
 library("tidyverse")
@@ -53,6 +53,67 @@ par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 ggmap::ggmap(broughton_map) + ggplot2::geom_point(data=dfs1, ggplot2::aes(x=s_lon_1, y=s_lat_1), size=1)
 dev.off() 
 getwd()
+
+##MAP 2----
+
+# Load required libraries
+library(rnaturalearth)
+library(ggplot2)
+library(grid)
+install.packages('devtools')
+devtools::install_github("ropensci/rnaturalearthhires")
+
+# Download world polygon data
+world <- ne_countries(scale = "large", returnclass = "sf")
+world1<- ne_countries(scale = "large", returnclass = "sf")
+
+lakes110 <- ne_download(scale = 10, type = "admin_1_states_provinces", category = "cultural")
+sp::plot(lakes110)
+
+library(sf)
+states <- st_as_sf(map("province", plot = FALSE, fill = TRUE))
+head(states)
+
+# Define region of interest for the inset map (e.g. Europe)
+n_edge<-60
+s_edge<-45
+w_edge<--140
+e_edge<--120
+
+n_edge1<-51.3
+s_edge1<-50.3
+w_edge1<--127.5
+e_edge1<--125.5
+
+
+# Create main plot
+main_plot <- ggplot(data = world) +
+  geom_sf() +
+  coord_sf(xlim = c(w_edge, e_edge), ylim = c(s_edge, n_edge)) +
+  ggtitle("World Map") +
+  xlab("Longitude")+ylab("Latitude")+
+  theme_minimal() +
+  # Add a rectangle to represent the inset area on the main map
+  geom_rect(aes(xmin = w_edge1, xmax = e_edge1, ymin = s_edge1, ymax = n_edge1),
+            color = "black", fill = NA, data = data.frame(xmin = w_edge1, xmax = e_edge1, ymin = s_edge1, ymax = n_edge1),
+            inherit.aes = FALSE)
+
+
+world <- ne_countries(scale = 10, returnclass = "sf")
+# Create an inset map
+inset_map <- ggplot(data = world) +
+  geom_sf() +
+  coord_sf(xlim = c(w_edge1, e_edge1), ylim = c(s_edge1, n_edge1)) +
+  geom_point(data=dfs1,aes(x=s_lon_1, y=s_lat_1), size=1)+
+  theme_void()+
+  theme(panel.border=element_rect(color = "black", linewidth = 2, fill=NA))
+    #theme(panel.background=element_blank(),panel.ontop = TRUE, = ggplot2::element_rect(color = "black", linewidth = 3))
+
+
+# Add the inset map to the main plot
+vp <- viewport(width = 0.4, height = 0.37, x = 0.4, y = 0.2)
+print(main_plot)
+print(inset_map, vp = vp)
 
 
 
