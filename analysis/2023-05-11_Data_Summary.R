@@ -1,3 +1,6 @@
+##This code was written by Jacob Houtman for 
+
+
 #set working directory
 setwd(here("data-clean"))
 
@@ -46,56 +49,93 @@ total.prawns<-c(100,100,100,100,100)
 true.alive<-c(90,80,60,40,10)
 
 #dead.lost provides the percentage of observed prawns that lived, given the
-#true survival (i.e. of lost and recovered prawns) and percent of dead prawns lost
+#true survival (i.e. of lost and recovered prawns) and percent of dead prawns lost, 
+#under the assumption only dead prawns are lost
 
 dead.lost<-function(totals,true.alive, percent){
   
   #total prawns minus living prawns gives dead prawns
   true.dead=totals-true.alive
+  
+  #lost is the number of prawns lost, calculated as dead prawns times probability of losing a dead prawn
+  #(the probability of losing a living prawn are 0 in this scenario)
   lost=true.dead*percent
+  
+  #observed.alive is the observed percent of prawns that survived
   observed.alive=100*true.alive/(totals-lost)
-  return(100*true.alive/(totals-lost))
-}
-
-alive.lost<-function(totals,true.alive, percent){
-  lost=true.alive*percent
-  observed.alive=100*(true.alive-lost)/(totals-lost)
+  
   return(observed.alive)
 }
 
+#alive.lost provides the percentage of observed prawns that lived, given the
+#true survival (i.e. of lost and recovered prawns) and percent of alive prawns lost, 
+#under the assumption only dead prawns are lost
+
+alive.lost<-function(totals,true.alive, percent){
+  
+  #lost is the true number of living prawns times the probability of losing a living prawn 
+  #(probability of losing a dead prawn are 0 in this scenario)
+  lost=true.alive*percent
+  
+  #observed.alive is the observed percent of prawns that survived
+  observed.alive=100*(true.alive-lost)/(totals-lost)
+  
+  return(observed.alive)
+}
+
+#equal.lost provides the percentage of observed prawns that lived, given the
+#true survival (i.e. of lost and recovered prawns) and percent of prawns lost, 
+#under the assumption living and dead prawns have equal likelihood of being lost
+
 equal.lost<-function(totals,true.alive, percent){
+  
+  #true.dead is the total prawns minus the number of living ones
   true.dead=totals-true.alive
   
+  #lost.alive is the true number of living prawns times the probability of losing a living prawn 
   lost.alive=true.alive*percent
+  
+  #lost.dead is the true number of dead prawns times the probability of losing a dead prawn 
   lost.dead=true.dead*percent
+  
+  #total lost is the number of lost dead prawns plus the number of lost living prawns
   lost=lost.alive+lost.dead
   
+  #observed.alive is the observed percent of prawns that survived
   observed.alive=100*(true.alive-lost.alive)/(totals-lost)
   return(observed.alive)
 }
 
+#Save upcoming figures as a png
 setwd(here("figures"))
 png(paste(Sys.Date(), "lost_bias_20.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
 par(mfrow=c(3,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 
+#Plot showing true surivival vs observed survival at different treatments (times out of water)
+#assuming only dead prawns are lost
 plot(treatments, true.alive, xlim=c(-5,125),ylim=c(0,100),xlab="Treatment", ylab="Percent Survived", main="Survival when 20% of dead are lost")
 legend(x=90,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
 points(treatments,dead.lost(total.prawns,true.alive,0.2), pch=2)
 
+#Plot showing true surivival vs observed survival at different treatments (times out of water)
+#assuming only living prawns are lost
 plot(treatments, true.alive, xlim=c(-5,125),ylim=c(0,100),xlab="Treatment", ylab="Percent Survived", main="Survival when 20% of alive are lost")
 legend(x=90,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
-points(treatments,alive.lost(total.prawns,true.alive,0.2), pch=2)
+points(treatments,alive.lost(total.prawns,true.alive,0.2), pch=3)
 
+#Plot showing true surivival vs observed survival at different treatments (times out of water)
+#assuming dead and alive prawns are lost at an equal frequency
 plot(treatments, true.alive, xlim=c(-5,125),ylim=c(0,100),xlab="Treatment", ylab="Percent Survived", main="Survival when loss (20%) is unbiased")
 legend(x=90,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
-points(treatments,equal.lost(total.prawns,true.alive,0.2), pch=2)
+points(treatments,equal.lost(total.prawns,true.alive,0.2), pch=4)
 
+#Stop saving figures as a png
 dev.off()
 
 
 
 
-
+# The same thing but for 40% lost (rather than 20% like above^)
 png(paste(Sys.Date(), "lost_bias_40.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
 par(mfrow=c(3,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 
@@ -114,9 +154,9 @@ dev.off()
 
 
 
-#plot(NULL, xlim=c(-5,125),ylim=c(0,1),xlab="Treatment", ylab="Proportion Survived", main="Survival with different loss biases")
-#legend(x=100,y=1,c("True survival","Dead lost","Alive lost","Equal lost"), pch=c(1,2,3,4), cex=0.5)
-#points(c(0, 60, 120), y=c(0.9, 0.6,0.1))
-#points(c(0, 60, 120), y=c(0.92, 0.65,0.12), pch = 2)
-#points(c(0, 60, 120), y=c(0.88, 0.56,0.082), pch=3)
-#points(c(0, 60, 120), y=c(0.9, 0.6,0.1), pch=4)
+plot(NULL, xlim=c(-5,125),ylim=c(0,1),xlab="Treatment", ylab="Proportion Survived", main="Survival with different loss biases")
+legend(x=100,y=1,c("True survival","Dead lost","Alive lost","Equal lost"), pch=c(1,2,3,4), cex=0.5)
+points(c(0, 60, 120), y=c(0.9, 0.6,0.1))
+points(c(0, 60, 120), y=c(0.92, 0.65,0.12), pch = 2)
+points(c(0, 60, 120), y=c(0.88, 0.56,0.082), pch=3)
+points(c(0, 60, 120), y=c(0.9, 0.6,0.1), pch=4)

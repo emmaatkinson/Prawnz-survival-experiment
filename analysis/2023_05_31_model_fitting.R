@@ -1,5 +1,8 @@
 library(MuMIn) 
 library(here)
+library(glmmTMB)
+library(lme4)
+
 
 #set working directory
 setwd("/Users/jacobhoutman/Downloads/Git Hub/Prawnz-survival-experiment/data-clean")
@@ -20,8 +23,6 @@ model_df$treatment<-as.integer(model_df$treatment)
 model_df<-model_df[order(model_df$trial_number,model_df$prawn_id),]
 model_df$trial_trap<-paste(model_df$trial_number,"-",model_df$trap_number)
 
-
-model_df_1<-model_df[c(-564,-1255),]
 
 model_df_1$temp<-rep(0, nrow(model_df_1))
 n_trials<-nrow(trial)
@@ -49,109 +50,113 @@ library("lme4")
 
 model_df_1
 model_df_2<-model_df_1[is.na(model_df_1$length)==FALSE,]
-
+unique(model_df_2$temp)
+trial$exp_set_temp_air
 nrow(model_df_2)
+
+##Delete above this----
+
+setwd(here("data-clean"))
+
+model_df<-read.csv("2023_08_10_model_dataframe")
+##Modelling----
 #NULL:0
-
-model_0_1<-lme4::glmer(alive~(1|trial_trap),data=model_df_2,family=binomial)
-model_0_2<-glmmTMB::glmmTMB(alive~(1|trial_trap),data=model_df_2,family=binomial)
-
+library(glmmTMB)
+library(lme4)
+model_0_1<-lme4::glmer(alive~(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_0_2<-glmmTMB::glmmTMB(alive~(1|trial_trap),data=model_df,family=binomial)
 
 #1 MAIN EFFECT:1
 
 #treatment model
-model_1.1_1<-glmer(alive~treatment+(1|trial_trap),data=model_df_2,family=binomial)
-model_1.1_2<-glmmTMB(alive~treatment+(1|trial_trap),data=model_df_2,family=binomial)
+model_1.1_1<-glmer(alive~treatment+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_1.1_2<-glmmTMB(alive~treatment+(1|trial_trap),data=model_df,family=binomial)
 
 #temp model
-model_1.2_1<-glmer(alive~temp+(1|trial_trap),data=model_df_2,family=binomial)
-model_1.2_2<-glmmTMB(alive~temp+(1|trial_trap),data=model_df_2,family=binomial)
+model_1.2_1<-glmer(alive~temp+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_1.2_2<-glmmTMB(alive~temp+(1|trial_trap),data=model_df,family=binomial)
 
 #length model
-model_1.3_1<-glmer(alive~length+(1|trial_trap),data=model_df_2,family=binomial)
-model_1.3_2<-glmmTMB(alive~length+(1|trial_trap),data=model_df_2,family=binomial)
+model_1.3_1<-glmer(alive~length+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_1.3_2<-glmmTMB(alive~length+(1|trial_trap),data=model_df,family=binomial)
 
 
 #2 MAIN EFFECTS:2
 
 #treatment and temp model 
-model_2.1_1<-glmer(alive~treatment+temp+(1|trial_trap),data=model_df_2,family=binomial)
-model_2.1_2<-glmmTMB(alive~treatment+temp+(1|trial_trap),data=model_df_2,family=binomial)
+model_2.1_1<-glmer(alive~treatment+temp+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_2.1_2<-glmmTMB(alive~treatment+temp+(1|trial_trap),data=model_df,family=binomial)
 
 #temp and length model 
-model_2.2_1<-glmer(alive~length+temp+(1|trial_trap),data=model_df_2,family=binomial)
-model_2.2_2<-glmmTMB(alive~length+temp+(1|trial_trap),data=model_df_2,family=binomial)
+model_2.2_1<-glmer(alive~length+temp+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_2.2_2<-glmmTMB(alive~length+temp+(1|trial_trap),data=model_df,family=binomial)
 
 #treatment and length model 
-model_2.3_1<-glmer(alive~treatment+length+(1|trial_trap),data=model_df_2,family=binomial)
-model_2.3_2<-glmmTMB(alive~treatment+length+(1|trial_trap),data=model_df_2,family=binomial)
+model_2.3_1<-glmer(alive~treatment+length+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_2.3_2<-glmmTMB(alive~treatment+length+(1|trial_trap),data=model_df,family=binomial)
 
 
 #3 MAIN EFFECTS:3
 
 #treatment and temp and length 
-model_3_1<-glmer(alive~treatment+temp+length+(1|trial_trap),data=model_df_2,family=binomial)
-model_3_2<-glmmTMB(alive~treatment+temp+length+(1|trial_trap),data=model_df_2,family=binomial)
+model_3_1<-glmer(alive~treatment+temp+length+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_3_2<-glmmTMB(alive~treatment+temp+length+(1|trial_trap),data=model_df,family=binomial)
 
 
 # 2 main 1 interaction:4
 
 #Treatment*Temp 
-model_4.1_1<-glmer(alive~treatment+temp+treatment*temp+(1|trial_trap),data=model_df_2,family=binomial)
-model_4.1_2<-glmmTMB(alive~treatment+temp+treatment*temp+(1|trial_trap),data=model_df_2,family=binomial)
+model_4.1_1<-glmer(alive~treatment+temp+treatment*temp+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_4.1_2<-glmmTMB(alive~treatment+temp+treatment*temp+(1|trial_trap),data=model_df,family=binomial)
 
 #treatment*length
-model_4.2_1<-glmer(alive~treatment+length+treatment*length+(1|trial_trap),data=model_df_2,family=binomial)
-model_4.2_2<-glmmTMB(alive~treatment+length+treatment*length+(1|trial_trap),data=model_df_2,family=binomial)
+model_4.2_1<-glmer(alive~treatment+length+treatment*length+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_4.2_2<-glmmTMB(alive~treatment+length+treatment*length+(1|trial_trap),data=model_df,family=binomial)
 
 #temp*length
-model_4.3_1<-glmer(alive~temp+length+temp*length+(1|trial_trap),data=model_df_2,family=binomial)
-model_4.3_2<-glmmTMB(alive~temp+length+temp*length+(1|trial_trap),data=model_df_2,family=binomial)
+model_4.3_1<-glmer(alive~temp+length+temp*length+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_4.3_2<-glmmTMB(alive~temp+length+temp*length+(1|trial_trap),data=model_df,family=binomial)
 
 
 # 3 main 1 interaction:5
 
 #Treatment*Temp +length
-model_5.1_1<-glmer(alive~length+treatment+temp+treatment*temp+(1|trial_trap),data=model_df_2,family=binomial)
-model_5.1_2<-glmmTMB(alive~length+treatment+temp+treatment*temp+(1|trial_trap),data=model_df_2,family=binomial)
+model_5.1_1<-glmer(alive~length+treatment+temp+treatment*temp+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_5.1_2<-glmmTMB(alive~length+treatment+temp+treatment*temp+(1|trial_trap),data=model_df,family=binomial)
 
 #treatment*length +temp
-model_5.2_1<-glmer(alive~temp+treatment+length+treatment*length+(1|trial_trap),data=model_df_2,family=binomial)
-model_5.2_2<-glmmTMB(alive~temp+treatment+length+treatment*length+(1|trial_trap),data=model_df_2,family=binomial)
+model_5.2_1<-glmer(alive~temp+treatment+length+treatment*length+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_5.2_2<-glmmTMB(alive~temp+treatment+length+treatment*length+(1|trial_trap),data=model_df,family=binomial)
 
 #temp*length+treatment
-model_5.3_1<-glmer(alive~treatment+temp+length+temp*length+(1|trial_trap),data=model_df_2,family=binomial)
-model_5.3_2<-glmmTMB(alive~treatment+temp+length+temp*length+(1|trial_trap),data=model_df_2,family=binomial)
+model_5.3_1<-glmer(alive~treatment+temp+length+temp*length+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_5.3_2<-glmmTMB(alive~treatment+temp+length+temp*length+(1|trial_trap),data=model_df,family=binomial)
 
 
 #2 interaction:6
 
 #treatment*temp+temp*length
-model_6.1_1<-glmer(alive~temp*length+treatment*temp+(1|trial_trap),data=model_df_2,family=binomial)
-model_6.1_2<-glmmTMB(alive~temp*length+treatment*temp+(1|trial_trap),data=model_df_2,family=binomial)
+model_6.1_1<-glmer(alive~temp*length+treatment*temp+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_6.1_2<-glmmTMB(alive~temp*length+treatment*temp+(1|trial_trap),data=model_df,family=binomial)
 
 #treatment*temp+treatment*length
-model_6.2_1<-glmer(alive~treatment*length+treatment*temp+(1|trial_trap),data=model_df_2,family=binomial)
-model_6.2_2<-glmmTMB(alive~treatment*length+treatment*temp+(1|trial_trap),data=model_df_2,family=binomial)
+model_6.2_1<-glmer(alive~treatment*length+treatment*temp+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_6.2_2<-glmmTMB(alive~treatment*length+treatment*temp+(1|trial_trap),data=model_df,family=binomial)
 
 #treatment*length+temp*length 
-model_6.3_1<-glmer(alive~temp*length+treatment*length+(1|trial_trap),data=model_df_2,family=binomial)
-model_6.3_2<-glmmTMB(alive~temp*length+treatment*length+(1|trial_trap),data=model_df_2,family=binomial)
+model_6.3_1<-glmer(alive~temp*length+treatment*length+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_6.3_2<-glmmTMB(alive~temp*length+treatment*length+(1|trial_trap),data=model_df,family=binomial)
 
 
 # 2-way interactions:7
 
 #treatment*length+temp*length +temp*treatment
-model_7_1<-glmer(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df_2,family=binomial)
-model_7_2<-glmmTMB(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df_2,family=binomial)
+model_7_1<-glmer(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
+model_7_2<-glmmTMB(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial)
 
 
-
-
-
-
-
-#ANALYSIS AND PLOTTING
+##delete 
+#ANALYSIS AND PLOTTING----
 
 back_trans<-function(x){
   return(exp(x)/(1+exp(x)))
@@ -164,13 +169,25 @@ back_trans_1<-function(x){
 }
 
 
-nrow(model_df_2)
-
+##BIC Table----
 # Get BIC values for each mixed-effects model
-BIC.values <- BIC(model_0_2, model_1.1_2, model_1.2_2, model_1.3_2, model_2.1_2, model_2.2_2, model_2.3_2,model_3_2, model_4.1_2, model_4.2_2,model_4.3_2, model_5.1_2, model_5.2_2,model_5.3_2,model_6.1_2, model_6.2_2,model_6.3_2,model_7_2)
+BIC.values <- BIC(model_0_1, model_1.1_1, model_1.2_1, model_1.3_1,
+                  model_2.1_1, model_2.2_1, model_2.3_1,model_3_1, 
+                  model_4.1_1, model_4.2_1,model_4.3_1, model_5.1_1, 
+                  model_5.2_1,model_5.3_1,model_6.1_1, model_6.2_1,
+                  model_6.3_1,model_7_1)
 
-# Shorthand names for models (in the same order as in BIC.values
-BIC.names <- c("Null", "Treatment", "Temperature", "Length","Treatment + Temperature","Temperature + Length","Treatment + Length","Length + Treatment + Temperature", "Treatment x Temperature","Treatment x Length","Temperature x Length", "Treatment x Temperature + Length","Treatment x Length + Temperature","Temperature x Length + Treatment","Treatment x Temperature + Temperature x Length","Treatment x Temperature + Treatment x Length","Treatment x Length + Temperature x Length", "Treatment x Temperature + Treatment x Length + Temperature x Length")
+# Shorthand names for models (in the same order as in BIC.values)
+BIC.names <- c("Null", "Treatment", "Temperature", "Length",
+               "Treatment + Temperature","Temperature + Length",
+               "Treatment + Length","Length + Treatment + Temperature",
+               "Treatment x Temperature","Treatment x Length",
+               "Temperature x Length", "Treatment x Temperature + Length",
+               "Treatment x Length + Temperature","Temperature x Length + Treatment",
+               "Treatment x Temperature + Temperature x Length",
+               "Treatment x Temperature + Treatment x Length",
+               "Treatment x Length + Temperature x Length", 
+               "Treatment x Temperature + Treatment x Length + Temperature x Length")
 
 # Order the BIC and model name vectors by ascending order of the AIC vector elements
 BIC.order <- order(BIC.values$BIC)
@@ -191,7 +208,7 @@ for (i in 2:length(BIC.weights)) {
 BIC.logLik <- c(logLik(model_0_2), logLik(model_1.1_2), logLik(model_1.2_2), logLik(model_1.3_2), logLik(model_2.1_2), logLik(model_2.2_2), logLik(model_2.3_2),logLik(model_3_2), logLik(model_4.1_2), logLik(model_4.2_2),logLik(model_4.3_2), logLik(model_5.1_2), logLik(model_5.2_2),logLik(model_5.3_2),logLik(model_6.1_2), logLik(model_6.2_2),logLik(model_6.3_2),logLik(model_7_2))
 BIC.logLik <- BIC.logLik[BIC.order]
 
-summary(model_6.1_2)
+
 # Create delta BIC function and calculate for each model relative to top model
 deltaFcn = function(listBIC) {
   deltas = -(min(listBIC) - listBIC)
@@ -203,14 +220,11 @@ BIC.table <- data.frame(
   model.name = BIC.names, BIC=BIC.values,
   deltaBIC = round(BIC.deltas,2),
   logLik = round(BIC.logLik,2))
-formula(model_big1)
-
-getwd()
 
 # Save BIC table 
-setwd("/Users/jacobhoutman/Documents/Git Hub/Prawnz-survival-experiment/figures")
+setwd(here("figures"))
 write.csv(BIC.table, paste(Sys.Date(),"Prawn_Survival_BIC_table_noweights.csv"))
-BIC.table
+
 
 
 
