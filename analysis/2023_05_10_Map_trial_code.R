@@ -92,7 +92,7 @@ world <- rnaturalearth::ne_countries(scale = 10, returnclass = "sf")
 
 #Labels and coordinates
 long<-c(-126, -124)
-lat<-c(49,53)
+lat<-c(49.5,53)
 names<-c("VI","BC")
 
 
@@ -140,8 +140,8 @@ vp <- viewport(width = 0.37, height = 0.34, x = 0.48, y = 0.3)
 
 
 #Save as PNG file
-setwd(here("figures"))
-png(filename=paste(Sys.Date(), "broughton_inset_map.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
+setwd(here("New-figures"))
+pdf(paste(Sys.Date(), "broughton_inset_map.pdf", sep="_"), width=7, height=11)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 print(main_plot)
 print(inset_map, vp = vp)

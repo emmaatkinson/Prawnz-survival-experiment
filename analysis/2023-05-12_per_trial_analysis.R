@@ -1,7 +1,7 @@
 #June 9th 2023
 #This document is 
 
-#Coding was done by Jacob Houtman, with guidance from Emma Atkinson and Dr. Mark Lewis 
+#Coding was done by Jacob Houtman, with guidance from Emma Atkinson (MSc) and Dr. Mark Lewis 
 
 #Load required packages 
 library(here)
@@ -16,11 +16,12 @@ setwd(here("data-clean"))
 #'survival' has individual level data such as the treatment a prawn experienced and whether it survived.
 trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
 survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
+reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
 
 #Sort data sets by trial number
 trial<-trial[order(trial$trial_number),]
 survival <- survival[order(survival$trial_number, survival$trap_number),]
-
+reflexes<-reflexes[order(reflexes$trial_number, reflexes$trap_number),]
 #Number of trials 
 n_trials<-length(unique(trial$trial_number))
 
@@ -34,7 +35,7 @@ lost_immediate<-lost_30<-lost_60<-lost_90<-lost_120<-vector(mode="numeric", leng
 file_names<-file_names_1<-vector(mode="character", length=n_trials)
 alive_0<-alive_30<-alive_60<-alive_90<-alive_120<-vector(mode="integer", length=n_trials)
 remain_0<-remain_30<-remain_60<-remain_90<-remain_120<-vector(mode="integer", length=n_trials)
-remain_0
+
 #'For' loop, looping once for each trial number
 for (i in 1:n_trials){
 
@@ -50,6 +51,9 @@ for (i in 1:n_trials){
   #This line subsets the survival data frame (with one row for each prawn in the trial) to only the prawns
   #in the current trial number (specified by "sort(trial$trial_number)[i]").
   df1<-subset(survival, survival$trial_number==sort(trial$trial_number)[i])
+  
+  #Reflex scores for this trial
+  df2<-subset(reflexes, reflexes$trial_number==sort(trial$trial_number)[i])
   
   #The trial data contains the number of prawns in each treatment at the beginning of the treatment.
   # The sum of the treatment numbers is the total prawns at the start of the trial.
@@ -208,6 +212,9 @@ for (i in 1:n_trials){
  barplot(c(df$immediate_release_number, df$X30min_number,df$X1h_number, df$X1h30min_numner,df$X2h_number), 
          names=c("0","30","60","90","120"), ylim = c(0,100), main=paste("Prawns in each treatment group in trial",df$trial_number))
  
+ #
+ hist(df2$score, main=paste("Reflex scores in trial",df$trial_number), xlab="Reflex Score")
+ 
  #end pdf writing
  dev.off()
   
@@ -220,7 +227,8 @@ for (i in 1:n_trials){
 #remaining for each trial.
 lost_prawnz<-pulled-remain
 
-#Combine pdfs of summary graphs and violin plots, respectively, into two multipage pdfs
+  #Combine pdfs of summary graphs and violin plots, respectively, into two multipage pdfs
+getwd()
 pdf_combine(input=file_names,output = paste0(Sys.Date(),"_combined_lost_summary.pdf"))
 pdf_combine(input=file_names_1,output = paste0(Sys.Date(),"_combined_violins.pdf"))
 
@@ -384,7 +392,7 @@ barplot(c(sum(lost_immediate)/(sum(lost_prawnz)+sum(unbanded)), sum(lost_30)/(su
 barplot(c(sum(lost_immediate)/sum(trial$immediate_release_number), sum(lost_30)/sum(trial$X30min_number),sum(lost_60)/sum(trial$X1h_number), sum(lost_90)/sum(trial$X1h30min_numner),sum(lost_120)/sum(trial$X2h_number)),names=c("0","30","60","90","120"), main="Proportion of each Treatment Lost")
 dev.off()
 #MAKE BIG PDFs
-
+sum(pulled-remain)
 
 sum(lost_immediate)/(sum(lost_prawnz)+sum(unbanded))+ sum(lost_30)/(sum(lost_prawnz)+sum(unbanded))+sum(lost_60)/(sum(lost_prawnz)+sum(unbanded))+ sum(lost_90)/(sum(lost_prawnz)+sum(unbanded))+sum(lost_120)/(sum(lost_prawnz)+sum(unbanded))
 
@@ -553,7 +561,7 @@ predicted_alive<-100*c((sum(as.integer(alive_0))-t0_pr_mort)/sum(as.integer(rema
 true_t120
 predicted_alive+observed_mort_p+post_release_mort_p
 rm_data <- matrix(c(predicted_alive,observed_mort_p,post_release_mort_p),nrow=3, byrow = TRUE)
-rownames(rm_data) <- c("Lived","Died During Experiment","Died After Experiment")
+rownames(rm_data) <- c("Lived","Died within 24 hours","Died after 24 hours")
 colnames(rm_data) <- c("0","30","60","90","120")
 
 # Grouped barplot

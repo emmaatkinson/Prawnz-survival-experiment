@@ -79,14 +79,19 @@ tdata_total_3<-tdata_total_2[which(tdata_total_2$trial_number!=12),]
 sdata_total_3<-sdata_total_2[which(sdata_total_2$trial_number!=12),]
 
 ##Data cleaning
-bad_rows<-c(which(is.na(sdata_total_3$dead+sdata_total_3$alive+sdata_total_3$scavenged)),which(is.na(sdata_total_3$trap_number)))
+bad_rows<-c(which(is.na(sdata_total_3$dead+sdata_total_3$alive+sdata_total_3$scavenged)),
+            which(is.na(sdata_total_3$trap_number)))
+sdata_total_3[bad_rows,]
+
 sdata_total_3[bad_rows[1],]$scavenged<-0
-sdata_total_4<-sdata_total_3[-bad_rows[2],]
 
-tdata_total_3[20,]$X2h_number
-tdata_total_3[20,]$X2h_number<-0
+sdata_total_4<-sdata_total_3[-bad_rows[2:3],]
 
-which(is.na(sdata_total_4$trap_number))
+
+bad_rows<-which(is.na(tdata_total_3$X2h_number))
+tdata_total_3[bad_rows,]$X2h_number<-0
+
+rdata_total_3$score<-rowSums(rdata_total_3[6:15])
 
 ##Change working directory to desired location for new files
 setwd(here("data-clean"))
@@ -95,6 +100,8 @@ setwd(here("data-clean"))
 write.csv(rdata_total_3,"2023-05-09_prawn_combined_reflex_data.csv")
 write.csv(tdata_total_3,"2023-05-09_prawn_combined_trial_data.csv")
 write.csv(sdata_total_4,"2023-05-09_prawn_combined_survival_data.csv")
+
+
 
 
 
