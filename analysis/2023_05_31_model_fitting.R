@@ -5,9 +5,9 @@ library(lme4)
 
 
 #set working directory
-setwd("/Users/jacobhoutman/Downloads/Git Hub/Prawnz-survival-experiment/data-clean")
+setwd(here("data-clean"))
 
-
+getwd()
 #Read in dataframe 
 survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
 trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
@@ -59,6 +59,7 @@ nrow(model_df_2)
 setwd(here("data-clean"))
 
 model_df<-read.csv("2023_08_10_model_dataframe")
+
 ##Modelling----
 #NULL:0
 library(glmmTMB)
@@ -151,8 +152,8 @@ model_6.3_2<-glmmTMB(alive~temp*length+treatment*length+(1|trial_trap),data=mode
 # 2-way interactions:7
 
 #treatment*length+temp*length +temp*treatment
-model_7_1<-glmer(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
-model_7_2<-glmmTMB(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial)
+model_7_1<-glmer(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,nAGQ=10,na.action="na.fail")
+model_7_2<-glmmTMB(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,na.action="na.fail")
 
 
 ##delete 
@@ -176,6 +177,12 @@ BIC.values <- BIC(model_0_1, model_1.1_1, model_1.2_1, model_1.3_1,
                   model_4.1_1, model_4.2_1,model_4.3_1, model_5.1_1, 
                   model_5.2_1,model_5.3_1,model_6.1_1, model_6.2_1,
                   model_6.3_1,model_7_1)
+
+c("model_0_1", 'model_1.1_1', 'model_1.2_1', 'model_1.3_1',
+   'model_2.1_1', 'model_2.2_1', 'model_2.3_1','model_3_1', 
+   'model_4.1_1', 'model_4.2_1','model_4.3_1', 'model_5.1_1', 
+   'model_5.2_1','model_5.3_1','model_6.1_1', 'model_6.2_1',
+   'model_6.3_1','model_7_1')[BIC.order]
 
 # Shorthand names for models (in the same order as in BIC.values)
 BIC.names <- c("Null", "Treatment", "Temperature", "Length",
@@ -224,12 +231,5 @@ BIC.table <- data.frame(
 # Save BIC table 
 setwd(here("figures"))
 write.csv(BIC.table, paste(Sys.Date(),"Prawn_Survival_BIC_table_noweights.csv"))
-
-
-
-
-
-
-
 
 

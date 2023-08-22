@@ -472,9 +472,9 @@ c2 <- rgb(255,192,203, max = 255, alpha = 100, names = "lt.pink")
 hgA <- hist(living$length, breaks = pretty(17.5:53.5, n = 69), col = "lightblue",plot = FALSE)
 hgB <- hist(not_living$length, breaks = pretty(17.5:53.5, n = 69), col = "lightblue",plot = FALSE)
 
-setwd(here("figures"))
-png(paste(Sys.Date(), "length_survival_histogram.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
-par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+setwd(here("New-figures"))
+png(paste(Sys.Date(), "length_survival_histogram.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(hgA, col = c1, main="Prawn Survival by Length",xlab="Length (mm)", ylab="Number of prawns") # Plot 1st histogram using a transparent color
 plot(hgB, col = c2, add = TRUE) 
 legend(45,80,c("Living", "Dead"),lty=1,lwd=4,col=c(c1,c2))
@@ -484,9 +484,9 @@ dev.off()
 hgA1 <- hist(living$temp, breaks = pretty(10:26, n = 32), col = "lightblue",plot = FALSE)
 hgB1 <- hist(not_living$temp, breaks = pretty(10:26, n = 32), col = "lightblue",plot = FALSE)
 
-setwd(here("figures/new"))
-png(paste(Sys.Date(), "temp_survival_histogram.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
-par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+
+png(paste(Sys.Date(), "temp_survival_histogram.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(hgA1, col = c1, main="Prawn Survival by Temperature",xlab="Temperature (C)", ylab="Number of prawns") # Plot 1st histogram using a transparent color
 plot(hgB1, col = c2, add = TRUE) 
 legend(20,500,c("Living", "Dead"),lty=1,lwd=4,col=c(c1,c2))
@@ -496,9 +496,9 @@ hgA1 <- hist(living$treatment, breaks = pretty(0:120, n = 12), col = "lightblue"
 hgB1 <- hist(not_living$treatment, breaks = pretty(0:120, n=12), col = "lightblue",plot = FALSE)
 
 
-setwd(here("new-figures"))
-png(paste(Sys.Date(), "treatment_survival_histogram.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
-par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+
+png(paste(Sys.Date(), "treatment_survival_histogram.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(hgA1, col = c1, main="Prawn Survival by Treatment", xlab="Time out of water", ylab="Number of prawns") # Plot 1st histogram using a transparent color
 plot(hgB1, col = c2, add = TRUE) 
 legend(95,900,c("Living", "Dead"),lty=1,lwd=4,col=c(c1,c2))
@@ -573,5 +573,5 @@ barplot(rm_data,
         xlab="Treatment", 
         font.lab=2)
 
-
+dev.off()
 
