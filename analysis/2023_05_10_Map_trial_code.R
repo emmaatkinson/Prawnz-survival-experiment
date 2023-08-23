@@ -10,6 +10,8 @@ library("lubridate")
 library("openintro")
 library("maps")
 library("ggmap")
+library(rgdal)
+library(maptools)
 
 #Define Largest and smallest latitude and longitude to set edges of the map
 n_edge<-max(max(append(trial$exp_set_lat_1,trial$exp_set_lat_2),na.rm=TRUE), max(append(trial$exp_haul_lat_1,trial$exp_haul_lat_2),na.rm=TRUE)) #select largest latitude, find a northern bound for edge of map
@@ -75,45 +77,76 @@ states <- st_as_sf(map("province", plot = FALSE, fill = TRUE))
 head(states)
 
 # Define region of interest for the inset map (e.g. Europe)
-n_edge<-60
+n_edge<-58
 s_edge<-45
 w_edge<--140
-e_edge<--120
+e_edge<--122
 
 n_edge1<-51.3
 s_edge1<-50.3
 w_edge1<--127.5
 e_edge1<--125.5
 
+#Data frame for map
+world <- rnaturalearth::ne_countries(scale = 10, returnclass = "sf")
+
+#Labels and coordinates
+long<-c(-126, -124)
+lat<-c(49.5,53)
+names<-c("VI","BC")
+
+
+##Data frame for BC boundary
+xx<-PROV[1,]$geometry[[1]][1]
+bc_boundary<-data.frame(xx[[1]][1])
+#remove the coast since that is included in the world data,
+bc_boundary1<-bc_boundary[4200:nrow(bc_boundary),]
+
 
 # Create main plot
 main_plot <- ggplot(data = world) +
   geom_sf() +
   coord_sf(xlim = c(w_edge, e_edge), ylim = c(s_edge, n_edge)) +
-  ggtitle("World Map") +
   xlab("Longitude")+ylab("Latitude")+
   theme_minimal() +
   # Add a rectangle to represent the inset area on the main map
   geom_rect(aes(xmin = w_edge1, xmax = e_edge1, ymin = s_edge1, ymax = n_edge1),
             color = "black", fill = NA, data = data.frame(xmin = w_edge1, xmax = e_edge1, ymin = s_edge1, ymax = n_edge1),
-            inherit.aes = FALSE)
+            inherit.aes = FALSE)+
+  #Add labels for BC and VI
+  geom_text(label=names[1], 
+            x=long[1],
+            y=lat[1]
+            , size = 3, hjust=0, vjust=-1)+
+  geom_text(label=names[2], 
+            x=long[2],
+            y=lat[2]
+            , size = 3, hjust=0, vjust=-1) +
+  geom_path(data=bc_boundary1, aes(X1,X2), colour = "darkgrey")
+main_plot
 
-
-world <- ne_countries(scale = 10, returnclass = "sf")
 # Create an inset map
 inset_map <- ggplot(data = world) +
   geom_sf() +
   coord_sf(xlim = c(w_edge1, e_edge1), ylim = c(s_edge1, n_edge1)) +
-  geom_point(data=dfs1,aes(x=s_lon_1, y=s_lat_1), size=1)+
+  geom_point(data=dfs1,aes(x=s_lon_1, y=s_lat_1), size=1, alpha=0.5)+
   theme_void()+
-  theme(panel.border=element_rect(color = "black", linewidth = 2, fill=NA))
+  theme(panel.border=element_rect(color = "black", linewidth = 1, fill=NA))
     #theme(panel.background=element_blank(),panel.ontop = TRUE, = ggplot2::element_rect(color = "black", linewidth = 3))
 
 
 # Add the inset map to the main plot
-vp <- viewport(width = 0.4, height = 0.37, x = 0.4, y = 0.2)
+vp <- viewport(width = 0.37, height = 0.34, x = 0.48, y = 0.3)
+
+
+#Save as PNG file
+setwd(here("New-figures"))
+pdf(paste(Sys.Date(), "broughton_inset_map.pdf", sep="_"), width=7, height=11)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 print(main_plot)
 print(inset_map, vp = vp)
+dev.off() 
+
 
 
 

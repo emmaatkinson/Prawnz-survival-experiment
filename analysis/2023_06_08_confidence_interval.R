@@ -47,8 +47,9 @@ min_temp<-min(trial$exp_set_temp_air)
 mu_temp<-mean(trial$exp_set_temp_air)
 max_temp<-max(trial$exp_set_temp_air)
 
-CI<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(mu_temp,120),treatment=c(1:120))) 
-CI1<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(max_temp,120),treatment=c(1:120))) 
+AICcmodavg::
+CI<-AICcmodavg::modavgPred(list(model_tti1), newdata=data.frame(temp=rep(mu_temp,120),treatment=c(1:120))) 
+CI1<-AICcmodavg::modavgPred(list(model_tti1), newdata=data.frame(temp=rep(max_temp,120),treatment=c(1:120))) 
 CI2<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(min_temp,120),treatment=c(1:120))) 
 
 CI3<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(mu_temp,120),treatment=c(1:120)), type="link") 
@@ -139,7 +140,6 @@ back_trans<-function(x){
 trans<-function(x){
   return(log(x/(1-x)))
 }
-
 
 plot3<-ggplot(plot_df, aes(x=x))+geom_line(aes(y=min, color="Min temp"), size = 1)+
   geom_ribbon(aes(ymin=CI2$lower.CL, ymax=CI2$upper.CL), alpha=0.5, fill = "black",  color = "black", linetype = "dotted")+
@@ -405,3 +405,101 @@ png(paste(Sys.Date(), "high_temp_long_re.png", sep="_"), width=3000, height=2000
 par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 ggplot(high_temp[which(high_temp$length==length_quant[4]),],aes(x=treatment, y=ps, col=trial_trap))+geom_line()+labs(title="3rd quartile length 3rd quartile temp")+theme(legend.position = "none",panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", colour = "grey50"))
 dev.off()
+
+
+
+##ATTEMPT 2----
+NEWDATA<-expand.grid(length=seq(18,52,length.out=20),temp=seq(10.7,25.4,length.out=20),treatment=c(0,15,30,45,60,75,90,105,120))
+NEWDATA<-data.frame(length=rep(35,30),temp=rep(17,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+library(lme4)
+ms1 <- dredge(model_7_2, rank=BIC)
+confset.95p <- get.models(ms1, subset = cumsum(weight) <= .9999)
+avgm<- model.avg(confset.95p)
+
+
+
+survival_predictor<-function(NEWDATA){
+
+NEWDATA$trial_trap<-rep(NA, nrow(NEWDATA))
+
+NEWDATA5<-NEWDATA
+NEWDATA5$trial_trap<-rep(0,nrow(NEWDATA))
+
+# Predictions from each of the models in a set, and with averaged coefficients
+pred.se <- data.frame(average=predict(avgm, NEWDATA, se.fit = TRUE, type = "response"),
+                      mod1=predict(model_6.1_1, NEWDATA5,re.form=NA, type = "response"),
+                      mod2=predict(model_5.1_1, NEWDATA5, re.form=NA, type = "response"),
+                      mod3=predict(model_4.1_1, NEWDATA5, re.form=NA, type = "response"),
+                      mod4=predict(model_7_1, NEWDATA5, re.form=NA, type = "response"),
+                      mod5=predict(model_6.2_1, NEWDATA5, re.form=NA, type = "response"))
+y <- pred.se$average.fit
+
+
+matplot(NEWDATA$treatment, y, type="l", ylim=c(0,1),
+        lty = 2, col = 6, lwd = 1, ylab="probability of survival", xlab="time out of water",
+        main=paste(unique(NEWDATA$length),"cm prawn in",unique(NEWDATA$temp),"degrees"))
+lines(NEWDATA5$treatment,pred.se$mod1,col=1)
+lines(NEWDATA5$treatment,pred.se$mod2,col=2)
+lines(NEWDATA5$treatment,pred.se$mod3,col=3)
+lines(NEWDATA5$treatment,pred.se$mod4,col=4)
+lines(NEWDATA5$treatment,pred.se$mod5,col=5)
+
+}
+
+
+NEWDATA<-data.frame(length=rep(23,30),temp=rep(11,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+NEWDATA1<-data.frame(length=rep(35,30),temp=rep(11,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+NEWDATA2<-data.frame(length=rep(49,30),temp=rep(11,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+
+NEWDATA3<-data.frame(length=rep(23,30),temp=rep(16,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+NEWDATA4<-data.frame(length=rep(35,30),temp=rep(16,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+NEWDATA5<-data.frame(length=rep(49,30),temp=rep(16,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+
+NEWDATA6<-data.frame(length=rep(23,30),temp=rep(22,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+NEWDATA7<-data.frame(length=rep(35,30),temp=rep(22,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+NEWDATA8<-data.frame(length=rep(49,30),temp=rep(22,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+
+
+datums<-list(NEWDATA,NEWDATA1,NEWDATA2,NEWDATA3,NEWDATA4,NEWDATA5)
+leg<-c(1,0,0,0,0,0)
+
+plot.new()
+legend("left",
+       legend=c(lapply(confset.95p, formula),formula(model_6.2_1),
+                "averaged predictions + CI"),
+       lty = 1,  cex = 1, col=1:6)
+
+setwd(here("figures"))
+pdf(paste(Sys.Date(), "avg_model_comparison.pdf", sep="_"), width=7, height=11)
+par(mfrow=c(4,3),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot.new()
+legend("left",
+       legend=c("temp x treatment + length x temp",
+                "temp x treatment length",
+                "temp x treatment",
+                "length x temp + length x treatment + temp x treatment",
+                "treatment x length + treatment x temp ",
+                "averaged predictions"),
+       lty = c(1,1,1,1,1,2),  cex = 0.6, col=1:6)
+plot.new()
+plot.new()
+survival_predictor(NEWDATA)
+survival_predictor(NEWDATA1)
+survival_predictor(NEWDATA2)
+survival_predictor(NEWDATA3)
+survival_predictor(NEWDATA4)
+survival_predictor(NEWDATA5)
+survival_predictor(NEWDATA6)
+survival_predictor(NEWDATA7)
+survival_predictor(NEWDATA8)
+dev.off()
+
+
+
+#Compare coefficients
+top_five<-c(model_6.1_1,model_5.1_1,model_4.1_1,model_7_1,model_6.2_1)
+for (i in 1:5){
+print(summary(top_five[[i]])$coef)
+  
+}
+
