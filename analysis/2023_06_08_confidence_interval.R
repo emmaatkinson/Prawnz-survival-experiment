@@ -690,13 +690,29 @@ ms1 <- dredge(model_all, rank=BIC)
 confset.95p <- get.models(ms1, subset = weight >0)
 avgm<-model.avg(confset.95p, rank = BIC)
 
-#Accuracy
-model_df_pred<-model_df[,c("alive","length","treatment","temp")]
-model_df_pred$trial_trap<-rep(NA,nrow(model_df_pred))
+coefficients(avgm)
+fixef(model_best)
+fixef(model_main)
 
-avgm_pred<-predict(avgm,model_df_pred,re.form=NA, type = "response")
-best_pred<-predict(model_best,model_df_pred,re.form=NA, type = "response")
-main_pred<-predict(model_all,model_df_pred,re.form=NA, type = "response")
+model_table<-data.frame(cbind(c(fixef(model_best),0),coefficients(avgm),c(fixef(model_best),0),c(fixef(model_main),0,0,0)))
+model_table<-model_table[,2:4]
+rownames(model_table)[7]<-"length:treatment"
+colnames(model_table)<-c("Average model","Best model","Main Effects")
+
+
+#Manually get values for the random effect hyperparameter
+
+summary(avgm)
+summary(model_main)
+summary(model_best)
+
+hyperparameter<-c(NA,0.8791,0.8697)
+
+model_table["RE SD",]<-hyperparameter
+#Accuracy
+avgm_pred<-predict(avgm,model_df, type = "response")
+best_pred<-predict(model_best,model_df, type = "response")
+main_pred<-predict(model_all,model_df, type = "response")
 
 model_df_pred$predict_avg <- ifelse(avgm_pred>= .5, 1,0)
 model_df_pred$predict_best <- ifelse(best_pred>= .5, 1,0)
@@ -706,8 +722,18 @@ accuracy_avg<-mean(model_df_pred$alive==model_df_pred$predict_avg)
 accuracy_best<-mean(model_df_pred$alive==model_df_pred$predict_best)
 accuracy_main<-mean(model_df_pred$alive==model_df_pred$predict_main)
 
-average=c(accuracy_avg,accuracy_best,accuracy_main)
+accuracy=c(accuracy_avg,accuracy_best,accuracy_main)
 
+##Correlation Factor
+
+expit<-function(x){
+  return(exp(x)/(1+exp(x)))
+}
+
+##Correlation with data
+correlation<-c(cor(expit(avgm_pred),expit(model_df$alive)),
+cor(expit(best_pred),expit(model_df$alive)),
+cor(expit(main_pred),expit(model_df$alive)))
 
 #MAXIMUM DEVIANCE
 
@@ -739,11 +765,8 @@ max_dev_main<-max(c(abs(max(avgm_pred-main_pred)),abs(min(avgm_pred-main_pred)))
 
 deviance=c(max_dev_average,max_dev_best,max_dev_main)
 
-coefficients(avgm)
-fixef(model_best)
-fixef(model_main)
+model_table["Correlation",]<-correlation
 
-<-cbind(coefficients(avgm),c(fixef(model_best),0),c(fixef(model_main),0,0,0))
-
-
+model_table["Accuracy",]<-accuracy
+model_table["Max Deviance",]<-deviance
 

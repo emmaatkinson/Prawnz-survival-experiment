@@ -655,3 +655,19 @@ barplot(rm_data,
 legend('bottom',rownames(rm_data), fill=colors()[c(23,89,12)], cex=0.7)
 dev.off()
 graphics.off()
+
+
+
+##Per treatment length hist----
+
+setwd(here("new-figures"))
+png(paste(Sys.Date(), "mortality_by_treatment_barplot.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
+par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+hist(model_df_2[which(model_df_2$treatment==0),]$length)
+dev.off()
+graphics.off()
+
+
+
+
+
