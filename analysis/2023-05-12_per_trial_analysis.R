@@ -661,11 +661,26 @@ graphics.off()
 ##Per treatment length hist----
 
 setwd(here("new-figures"))
-png(paste(Sys.Date(), "mortality_by_treatment_barplot.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
-par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-hist(model_df_2[which(model_df_2$treatment==0),]$length)
+png(paste(Sys.Date(), "per_treatment_length_hist.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
+par(mfrow=c(3,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
+hist(model_df_2[which(model_df_2$treatment==0),]$length,breaks=pretty(17.5:53.5, n = 69),col=viridis(1, alpha=0.5),main="0 minute Length dist", 
+     xlab="Length (mm)", ylab="Number of prawns", ylim=c(0,70))
+
+hist(model_df_2[which(model_df_2$treatment==30),]$length,breaks=pretty(17.5:53.5, n = 69),col=viridis(1, alpha=0.5),main="30 minute Length dist", 
+     xlab="Length (mm)", ylab="Number of prawns",ylim=c(0,70))
+
+hist(model_df_2[which(model_df_2$treatment==60),]$length,breaks=pretty(17.5:53.5, n = 69),col=viridis(1, alpha=0.5),main="60 minute Length dist", 
+     xlab="Length (mm)", ylab="Number of prawns",ylim=c(0,70))
+hist(model_df_2[which(model_df_2$treatment==90),]$length,breaks=pretty(17.5:53.5, n = 69),col=viridis(1, alpha=0.5),main="90 minute Length dist", 
+     xlab="Length (mm)", ylab="Number of prawns",ylim=c(0,70))
+hist(model_df_2[which(model_df_2$treatment==120),]$length,breaks=pretty(17.5:53.5, n = 69),col=viridis(1, alpha=0.5),main="120 minute Length dist", 
+     xlab="Length (mm)", ylab="Number of prawns",ylim=c(0,70))
+hist(survival[is.na(survival$treatment),]$length,breaks=pretty(17.5:53.5, n = 69),col=viridis(1, alpha=0.5),main="Unbanded Length dist", 
+     xlab="Length (mm)", ylab="Number of prawns",ylim=c(0,70))
+
+
 dev.off()
-graphics.off()
+
 
 
 
