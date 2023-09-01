@@ -155,7 +155,7 @@ model_6.3_2<-glmmTMB(alive~temp*length+treatment*length+(1|trial_trap),data=mode
 model_7_1<-glmer(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,nAGQ=10,na.action="na.fail")
 model_7_2<-glmmTMB(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,na.action="na.fail")
 
-
+summary(model_6.1_1)
 ##delete 
 #ANALYSIS AND PLOTTING----
 
@@ -182,7 +182,7 @@ c("model_0_1", 'model_1.1_1', 'model_1.2_1', 'model_1.3_1',
    'model_2.1_1', 'model_2.2_1', 'model_2.3_1','model_3_1', 
    'model_4.1_1', 'model_4.2_1','model_4.3_1', 'model_5.1_1', 
    'model_5.2_1','model_5.3_1','model_6.1_1', 'model_6.2_1',
-   'model_6.3_1','model_7_1')[BIC.order]
+   'model_6.3_1','model_7_1')
 
 # Shorthand names for models (in the same order as in BIC.values)
 BIC.names <- c("Null", "Treatment", "Temperature", "Length",
@@ -226,6 +226,7 @@ BIC.deltas = deltaFcn(BIC.values)
 BIC.table <- data.frame(
   model.name = BIC.names, BIC=BIC.values,
   deltaBIC = round(BIC.deltas,2),
+  weights=BIC.weights,
   logLik = round(BIC.logLik,2))
 
 # Save BIC table 

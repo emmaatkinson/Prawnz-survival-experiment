@@ -114,19 +114,19 @@ par(mfrow=c(3,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 #Plot showing true surivival vs observed survival at different treatments (times out of water)
 #assuming only dead prawns are lost
 plot(treatments, true.alive, xlim=c(-5,125),ylim=c(0,100),xlab="Treatment", ylab="Percent Survived", main="Survival when 20% of dead are lost")
-legend(x=90,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
+legend(x=80,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
 points(treatments,dead.lost(total.prawns,true.alive,0.2), pch=2)
 
 #Plot showing true surivival vs observed survival at different treatments (times out of water)
 #assuming only living prawns are lost
 plot(treatments, true.alive, xlim=c(-5,125),ylim=c(0,100),xlab="Treatment", ylab="Percent Survived", main="Survival when 20% of alive are lost")
-legend(x=90,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
+legend(x=80,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
 points(treatments,alive.lost(total.prawns,true.alive,0.2), pch=3)
 
 #Plot showing true surivival vs observed survival at different treatments (times out of water)
 #assuming dead and alive prawns are lost at an equal frequency
 plot(treatments, true.alive, xlim=c(-5,125),ylim=c(0,100),xlab="Treatment", ylab="Percent Survived", main="Survival when loss (20%) is unbiased")
-legend(x=90,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
+legend(x=80,y=90,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
 points(treatments,equal.lost(total.prawns,true.alive,0.2), pch=4)
 
 #Stop saving figures as a png
@@ -140,7 +140,7 @@ png(paste(Sys.Date(), "lost_bias_40.png", sep="_"), width=480, height=480, units
 par(mfrow=c(3,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 
 plot(treatments, true.alive, xlim=c(-5,125),ylim=c(0,100),xlab="Treatment", ylab="Percent Survived", main="Survival when 40% of dead are lost")
-legend(x=90,y=1,c("True survival","Observed survival"), pch=c(1,2), cex=0.5)
+legend(x=90,y=100,c("True survival","Observed survival"), pch=c(1,2), cex=0.7)
 points(treatments,dead.lost(total.prawns,true.alive,0.4), pch=2)
 
 plot(treatments, true.alive, xlim=c(-5,125),ylim=c(0,100),xlab="Treatment", ylab="Percent Survived", main="Survival when 40% of alive are lost")

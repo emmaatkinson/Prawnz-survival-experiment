@@ -352,6 +352,12 @@ points(sort(trial$trial_number),lost_immediate)
 legend(20, 50, legend=c("0 min", "30 min","60 min", "90 min","120 min"),col=c("black","purple", "blue","green", "red"),pch=1, cex=1)
 dev.off()
 
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot(sort(trial$trial_number), lost_30,col='purple', xlab="Trial", ylab="Lost or Unbanded Prawns", ylim=c(-5,50))
+points(sort(trial$trial_number),lost_120, col='red')
+points(sort(trial$trial_number),lost_60, col='blue')
+points(sort(trial$trial_number),lost_90, col='green')
+points(sort(trial$trial_number),lost_immediate)
 
 #
 setwd(here("figures"))
@@ -462,26 +468,29 @@ write.csv(clean_data,paste(Sys.Date(),"trial_summary.csv"))
 setwd(here("data-clean"))
 getwd()
 model_df_2<-read.csv("2023_08_10_model_dataframe")
+
+cols=viridis(2, alpha=0.2)
+
 living<-model_df_2[which(model_df_2$alive==1),]
 not_living<-model_df_2[which(model_df_2$alive==0),]
 
 
-
-c1 <- rgb(173,216,230,max = 255, alpha = 100, names = "lt.blue")
-c2 <- rgb(255,192,203, max = 255, alpha = 100, names = "lt.pink")
-
-
 ##Length
-hgA <- hist(living$length, breaks = pretty(17.5:53.5, n = 69), col = "lightblue",plot = FALSE)
-hgB <- hist(not_living$length, breaks = pretty(17.5:53.5, n = 69), col = "lightblue",plot = FALSE)
-
-
+hgA <- hist(living$length, breaks = pretty(17.5:53.5, n = 69), col = cols[1],plot = FALSE)
+hgB <- hist(not_living$length, breaks = pretty(17.5:53.5, n = 69), col = cols[2],plot = FALSE)
+hgA$mids
+length(hgA$counts)/(hgA$counts+hgB$counts)
+length(pretty(17.5:53.5, n = 69))
 setwd(here("New-figures"))
 png(paste(Sys.Date(), "length_survival_histogram.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plot(hgA, col = c1, main="Prawn Survival by Length",xlab="Length (mm)", ylab="Number of prawns") # Plot 1st histogram using a transparent color
-plot(hgB, col = c2, add = TRUE) 
-legend(45,80,c("Living", "Dead"),lty=1,lwd=4,col=c(c1,c2))
+plot(hgA, col = cols[1], main="Prawn Survival by Length",xlab="Length (mm)", ylab="Number of prawns") # Plot 1st histogram using a transparent color
+plot(hgB, col = cols[2], add = TRUE) 
+
+lines(hgA$mids,hgA$counts/(hgA$counts+hgB$counts), lwd=2)
+#pmax(a, b, na.rm = TRUE)
+legend(45,120,c("Living", "Dead"),fill=c(cols[1],cols[2]))
+legend(45,80,c("Fraction Alive"),lwd=2,lty=1,col="black")
 dev.off()
 
 
@@ -492,8 +501,8 @@ dev.off()
 png(paste(Sys.Date(), "temp_survival_histogram.png", sep="_"), width=900, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 l <- list(living$temp,not_living$temp)
-plotrix::multhist(l, breaks=pretty(10:26, n = 32),col = c(c1,c2))
-legend(20,500,c("Living", "Dead"),fill=c(c1,c2))
+plotrix::multhist(l, breaks=pretty(10:26, n = 32),col = c(c1,c2),xlab="Temperature",ylab="Number of Prawns",width=2, main="Prawn Survival by Temperature")
+legend(150,500,c("Living", "Dead"),fill=c(c1,c2))
 dev.off()
 
 ##Treatment
@@ -503,8 +512,9 @@ png(paste(Sys.Date(), "treatment_survival_histogram.png", sep="_"), width=900, h
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 t <- list(living$treatment,not_living$treatment)
 plotrix::multhist(t, breaks=c(-1,1,29,31,59,61,89,91,119,121),col = c(c1,c2),main="Prawn Survival by Treatment", 
-                  xlab="Time out of water", ylab="Number of prawns")
+                  xlab="Treatment time (min)", ylab="Number of prawns")
 legend('topright',c("Living", "Dead"),fill=c(c1,c2))
+abline(h=0)
 dev.off()
 
 #NO LONGER
@@ -526,24 +536,27 @@ unique(s0$stage)
 s1<-survival[which(survival$stage==1),]
 s2<-survival[which(survival$stage==2),]
 s3<-survival[which(survival$stage==3),]
+sna<-survival[is.na(survival$stage),]
 
-s_l <- list(s0$length,s1$length,s2$length,s3$length)
+s_l <- list(s0$length,s1$length,s2$length,s3$length, sna$length)
 
 setwd(here("New-figures"))
 png(paste(Sys.Date(), "length_vs_stage_histogram.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-plotrix::multhist(s_l, breaks = pretty(17.5:53.5, n = 69),beside=FALSE,col = c("red","orange","yellow","blue"),main="Prawn Stage by Length", 
-                  xlab="Length", ylab="Number of prawns")
-legend('topright',title = "Stage",c("0", "1",'2','3'),fill=c("red","orange","yellow","blue"))
+plotrix::multhist(s_l, breaks = pretty(17.5:53.5, n = 69),beside=FALSE,col = c("red","orange","yellow","blue", "green"),main="Prawn Stage by Length", 
+                  xlab="Length (mm)", ylab="Number of prawns")
+abline(v=36, lty=2, lwd=2)
+legend('topright',title = "Stage",c("0", "1",'2','3', 'NA'),fill=c("red","orange","yellow","blue", "green"))
 dev.off()
 
 
-#9:20-1025
 
 
-
-
-
+survival1<-survival[survival$trial_number==3,]
+survival1NA<-survival1[which(is.na(survival1$length)),]
+survival1good<-survival1[which(!is.na(survival1$length)),]
+hist(survival1NA$treatment,xlim=c(0,120), col='pink', main='Length NAs in each treatment: Trial 3', xlab="Length (mm)")
+hist(survival1good$treatment,xlim=c(0,120),breaks=5, col='lightblue',main='Length distribution of banded prawns in Trial 1', xlab="Length (mm)")
 
 
 
@@ -563,7 +576,7 @@ percents=rev(c(1,2,4,10,28,60, 84, 96, 98, 99)/100)
 
 sum(numbers*percents)
 
-abc<-hist(reflexes$score)
+abc<-hist(rep(10,length(reflexes$score))-reflexes$score, col="hotpink", xlab="Impairment", ylab="Number of Prawns", main="Reflex score Distribution")
 
 t0<-subset(reflexes,reflexes$treatment==0)$score
 t30<-subset(reflexes,reflexes$treatment==30)$score
@@ -571,11 +584,12 @@ t60<-subset(reflexes,reflexes$treatment==60)$score
 t90<-subset(reflexes,reflexes$treatment==90)$score
 t120<-subset(reflexes,reflexes$treatment==120)$score
 
-t0_pr_mort<-sum(hist(t0,breaks=10,plot=FALSE)$counts*percents)
+t0_pr_mort<-sum(hist(t0,breaks=10,plot=TRUE)$counts*percents)
 t30_pr_mort<-sum(hist(t30,breaks=10,plot=FALSE)$counts*percents)
 t60_pr_mort<-sum(hist(t60,breaks=10,plot=FALSE)$counts*percents)
 t90_pr_mort<-sum(hist(t90,breaks=10,plot=FALSE)$counts*percents)
 t120_pr_mort<-sum(hist(t120,breaks=10,plot=FALSE)$counts*percents)
+
 
 true_t0<-(sum(survival[which(survival$treatment==0),]$alive)-t0_pr_mort)/sum(remain_0)
 true_t30<-(sum(survival[which(survival$treatment==30),]$alive)-t30_pr_mort)/sum(remain_30)
@@ -583,11 +597,22 @@ true_t60<-(sum(survival[which(survival$treatment==60),]$alive)-t60_pr_mort)/sum(
 true_t90<-(sum(survival[c(which(survival$treatment==90), which(survival$treatment==100)),]$alive)-t90_pr_mort)/sum(remain_90)
 true_t120<-(sum(survival[which(survival$treatment==120),]$alive)-t120_pr_mort)/sum(remain_120)
 
+
+post_exp_mort <-c(1/(sum(survival[which(survival$treatment==0),]$alive)/t0_pr_mort)
+,1/(sum(survival[which(survival$treatment==30),]$alive)/t30_pr_mort)
+,1/(sum(survival[which(survival$treatment==60),]$alive)/t60_pr_mort)
+,1/(sum(survival[c(which(survival$treatment==90), which(survival$treatment==100)),]$alive)/t90_pr_mort)
+,1/(sum(survival[which(survival$treatment==120),]$alive)/t120_pr_mort))
+
+
+
+
+
 setwd(here("new-figures"))
-png(paste(Sys.Date(), "release_mortality_by_.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
+png(paste(Sys.Date(), "release_mortality_by_treatment.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
 par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-barplot(c(1-true_t0,1-true_t30,1-true_t60,1-true_t90,1-true_t120), names=c(0,30,60,90,120), xlab = "Time out of water",
-        ylab="Probability of dying after 24 hours", col="hotpink", main="Mortality more than 24 hours after treatment")
+barplot(post_exp_mort, names=c(0,30,60,90,120), xlab = "Time out of water (min)",
+        ylab="Proportion of surviving prawns that died", col="hotpink", main="Post experiment mortality")
 dev.off()
 
 ##Stacked version
@@ -613,14 +638,20 @@ rm_data <- matrix(c(predicted_alive,observed_mort_p,post_release_mort_p),nrow=3,
 rownames(rm_data) <- c("Lived","Died within 24 hours","Died after 24 hours")
 colnames(rm_data) <- c("0","30","60","90","120")
 
+
+
 # Grouped barplot
+
+setwd(here("new-figures"))
+png(paste(Sys.Date(), "mortality_by_treatment_barplot.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
+par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(rm_data, 
         col=colors()[c(23,89,12)] , 
         border="white", 
-        font.axis=2, legend=rownames(rm_data),
-        beside=T, 
-        xlab="Treatment", 
+        font.axis=2, 
+        beside=F, 
+        xlab="Treatment time (min)", ylab="Percent of prawns", main="Prawn survival",
         font.lab=2)
-
+legend('bottom',rownames(rm_data), fill=colors()[c(23,89,12)], cex=0.7)
 dev.off()
-
+graphics.off()
