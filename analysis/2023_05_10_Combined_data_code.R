@@ -13,7 +13,7 @@ setwd(here("data-raw"))
 tdata_EA<-read.csv("prawnz_experiment_trial_data_entry_EA.csv")
 tdata_KF<-read.csv("prawnz_experiment_trial_data_entry_KF - prawnz_experiment_trial_data_entry.csv")
 tdata_KM<-read.csv("prawnz_experiment_trial_data_entry_KM - prawnz_experiment_trial_data_entry.csv")
-head(tdata_KM)
+tail(tdata_KM)
 
 ##The survival data files contains individual level survival information about each prawn
 ##Each of the files contains data collected by one observer
@@ -78,6 +78,9 @@ rdata_total_3<-rdata_total_2[which(rdata_total_2$trial_number!=12),]
 tdata_total_3<-tdata_total_2[which(tdata_total_2$trial_number!=12),]
 sdata_total_3<-sdata_total_2[which(sdata_total_2$trial_number!=12),]
 
+#This keeps the 2 other trials in
+sdata_total_3<-sdata_total
+tdata_total_3<-tdata_total
 ##Data cleaning
 bad_rows<-c(which(is.na(sdata_total_3$dead+sdata_total_3$alive+sdata_total_3$scavenged)),
             which(is.na(sdata_total_3$trap_number)))
@@ -96,12 +99,16 @@ rdata_total_3$score<-rowSums(rdata_total_3[6:15])
 ##Change working directory to desired location for new files
 setwd(here("data-clean"))
 
+
 ##Save clean data-frames to csv files.
 write.csv(rdata_total_3,"2023-05-09_prawn_combined_reflex_data.csv")
 write.csv(tdata_total_3,"2023-05-09_prawn_combined_trial_data.csv")
 write.csv(sdata_total_4,"2023-05-09_prawn_combined_survival_data.csv")
 
 
-
+#Save clean data frames wihtout trials 11 and 12
+setwd(here("data-clean"))
+write.csv(tdata_total_3,"2023-09-04_prawn_complete_trial_data.csv")
+write.csv(sdata_total_4,"2023-09-04_prawn_complete_survival_data.csv")
 
 

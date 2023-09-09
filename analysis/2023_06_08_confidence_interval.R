@@ -47,7 +47,7 @@ min_temp<-min(trial$exp_set_temp_air)
 mu_temp<-mean(trial$exp_set_temp_air)
 max_temp<-max(trial$exp_set_temp_air)
 
-AICcmodavg::
+
 CI<-AICcmodavg::modavgPred(list(model_tti1), newdata=data.frame(temp=rep(mu_temp,120),treatment=c(1:120))) 
 CI1<-AICcmodavg::modavgPred(list(model_tti1), newdata=data.frame(temp=rep(max_temp,120),treatment=c(1:120))) 
 CI2<-modavgPred(list(model_tti1), newdata=data.frame(temp=rep(min_temp,120),treatment=c(1:120))) 
@@ -483,7 +483,7 @@ lines(NEWDATAB5$treatment,pred.se$mod3,col=3)
       # lty = c(1,2),  cex = 1, col=c(1,6))
 }
 
-2
+
 
 NEWDATA<-data.frame(length=rep(23,30),temp=rep(11,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
 NEWDATA3<-data.frame(length=rep(23,30),temp=rep(16,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
@@ -674,9 +674,13 @@ library(MuMIn)
 setwd(here('Data-clean'))
 model_df<-read.csv("2023_08_10_model_dataframe")
 
-model_df$length<-scale(model_df$length)
 model_df$temp<-scale(model_df$temp)
 model_df$treatment<-scale(model_df$treatment)
+
+
+model_df_nosmall<-model_df[which(model_df$length>28.5),]
+model_df$length<-scale(model_df$length)
+model_df_nosmall$length<-scale(model_df_nosmall$length)
 
 BIC <- function(x) AIC(x, k = log(length(residuals(x))))
 
@@ -685,31 +689,52 @@ model_main<-glmer(alive~length+temp+treatment+(1|trial_trap),data=model_df,famil
 model_best<-glmer(alive~length*temp+temp*treatment+(1|trial_trap),data=model_df,family=binomial,nAGQ=10)
 model_all<-glmmTMB(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,na.action="na.fail")
 
+model_best_nolength<-glmer(alive~length*temp+temp*treatment+(1|trial_trap),data=model_df_nosmall,family=binomial,nAGQ=10)
+
+model_all_nosmall<-glmmTMB(alive~length*temp+treatment*length+temp*treatment+(1|trial_trap),data=model_df_nosmall,family=binomial,na.action="na.fail")
 
 ms1 <- dredge(model_all, rank=BIC)
 confset.95p <- get.models(ms1, subset = weight >0)
 avgm<-model.avg(confset.95p, rank = BIC)
 
+ms1_nosmall <- dredge(model_all_nosmall, rank=BIC)
+confset.95p <- get.models(ms1_nosmall, subset = weight >0)
+avgm_nosmall<-model.avg(confset.95p, rank = BIC)
+
 coefficients(avgm)
+coefficients(avgm_nosmall)[c(1,5,2,3,7,4,6)]
 fixef(model_best)
 fixef(model_main)
+fixef(model_best_nolength)
 
-model_table<-data.frame(cbind(c(fixef(model_best),0),coefficients(avgm),c(fixef(model_best),0),c(fixef(model_main),0,0,0)))
-model_table<-model_table[,2:4]
+
+round(2.1345,3)
+model_table<-data.frame(cbind(round(c(fixef(model_best),0),3),round(c(fixef(model_best_nolength),0),3),round(coefficients(avgm),3),
+                              round(coefficients(avgm_nosmall)[c(1,5,2,3,7,4,6)],3),round(c(fixef(model_main),0,0,0),3)))
+#model_table<-model_table[,2:4]
 rownames(model_table)[7]<-"length:treatment"
-colnames(model_table)<-c("Average model","Best model","Main Effects")
+colnames(model_table)<-c("Best model","Best model(No small)","Average model","Average model (No small)","Main Effects")
+
 
 
 #Manually get values for the random effect hyperparameter
 
-summary(avgm)
-summary(model_main)
 summary(model_best)
+summary(model_best_nolength)
 
-hyperparameter<-c(NA,0.8791,0.8697)
+summary(avgm)
+summary(avgm_nosmall)
+
+summary(model_main)
+
+hyperparameter<-c(0.8791,0.9342,NA,NA,0.8697)
 
 model_table["RE SD",]<-hyperparameter
+
+
 #Accuracy
+model_df_pred<-data.frame(alive=model_df$alive)
+
 avgm_pred<-predict(avgm,model_df, type = "response")
 best_pred<-predict(model_best,model_df, type = "response")
 main_pred<-predict(model_all,model_df, type = "response")
@@ -765,8 +790,12 @@ max_dev_main<-max(c(abs(max(avgm_pred-main_pred)),abs(min(avgm_pred-main_pred)))
 
 deviance=c(max_dev_average,max_dev_best,max_dev_main)
 
-model_table["Correlation",]<-correlation
+model_table["Correlation",]<-c(correlation[2],NA,correlation[1],NA,correlation[3])
 
-model_table["Accuracy",]<-accuracy
-model_table["Max Deviance",]<-deviance
+model_table["Accuracy",]<-c(accuracy[2],NA,accuracy[1],NA,accuracy[3])
+model_table["Max Deviance",]<-c(deviance[2],NA,deviance[1],NA,deviance[3])
 
+model_table
+
+setwd(here("figures"))
+write.csv(model_table, paste(Sys.Date(),"model_comparison.csv",sep ="_"))
