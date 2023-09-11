@@ -155,7 +155,7 @@ model_6.3_2<-glmmTMB(alive~temp*length+treatment*length+(1|trial_trap),data=mode
 model_7_1<-glmer(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,nAGQ=10,na.action="na.fail")
 model_7_2<-glmmTMB(alive~temp*length+treatment*length+temp*treatment+(1|trial_trap),data=model_df,family=binomial,na.action="na.fail")
 
-summary(model_6.1_1)
+
 ##delete 
 #ANALYSIS AND PLOTTING----
 

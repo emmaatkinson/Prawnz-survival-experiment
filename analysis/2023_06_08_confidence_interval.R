@@ -592,8 +592,9 @@ dev.off()
 #Survival curves with temp x treat averages
 library(AICcmodavg)
 mean_length<-mean(model_df_2$length)
-hist_temps<-hist(trial$exp_set_temp_air,plot=FALSE, breaks= c(10,14,18,22,26))
-hist(trial$exp_set_temp_air,plot=FALSE, breaks= c(10,14,18,22,26))
+hist_temps<-hist(trial$exp_set_temp_air,plot=FALSE, breaks= c(9,13,17,21,26))
+hist_temps$counts
+
 
 cols<-viridis(4)
 cols1<-viridis(4,alpha=0.5)
@@ -603,9 +604,10 @@ CInew3<-modavgPred(list(model_6.1_1), newdata=data.frame(temp=rep(hist_temps$mid
 CInew4<-modavgPred(list(model_6.1_1), newdata=data.frame(temp=rep(hist_temps$mids[4],120),length=rep(mean_length,120),treatment=c(1:120))) 
 
 x<-c(1:120)
-hist_temps$mids
 
-colors<-c("12\u00B0C"=cols[1],"16\u00B0C"=cols[2] ,'20\u00B0C'=cols[3], "24\u00B0C"=cols[4])
+hist_temps$breaks
+
+colors<-c("11\u00B0C"= cols[1],"15\u00B0C"=cols[2] ,"19\u00B0C"=cols[3], "23.5\u00B0C"= cols[4])
 
 temp_12<-model_df_2[which(model_df_2$temp<=hist_temps$breaks[2]),][,c("treatment","alive")]
 temp_16<-model_df_2[which(model_df_2$temp>hist_temps$breaks[2] & 
@@ -620,44 +622,53 @@ hist_temps$counts
 treatments<-sort(unique(temp_12$treatment))
 
 
-meanget<-function(df, t=c(0,30,60,90,120),vec_name){
+confint<-function(df, t=c(0,30,60,90,120)){
+  
+  N<-vector(length=length(t))
   vec_mean<-vector(length=length(t))
-  vec_sd<-vector(length=length(t))
+  vec_upper<-vector(length=length(t))
+  vec_lower<-vector(length=length(t))
+  
   for (i in 1:length(t)){
+    
+  N[i]=nrow(df[df$treatment==t[i],])
   vec_mean[i]<-mean(df[which(df$treatment==t[i]),]$alive)
-  vec_sd[i]<-sqrt(var(df[which(df$treatment==t[i]),]$alive))
+  vec_upper[i]<-prop.test(x= sum(df[which(df$treatment==t[i]),]$alive),n=nrow(df[df$treatment==t[i],]))$conf.int[2]
+  vec_lower[i]<-prop.test(x= sum(df[which(df$treatment==t[i]),]$alive),n=nrow(df[df$treatment==t[i],]))$conf.int[1]
+  
   }
-  return(data.frame(treat=t,mean=vec_mean, sd=1.96*vec_sd))
+  
+  return(data.frame(treat=t,N=N,mean=vec_mean,lower=vec_lower,upper=vec_upper))
   
 }
 
-means_12<-meanget(temp_12,t=c(0,30,60,90,100,120))
-means_16<-meanget(temp_16)
-means_20<-meanget(temp_20)
-means_24<-meanget(temp_24)
-x1=1
-ifelse(x1<2,y1)
-av<-rbind(means_12,means_16,means_20, means_24)
+av<-rbind(confint(temp_12), confint(temp_16,t=c(0,30,60,90,100,120)),confint(temp_20),confint(temp_24))
 
+#DELETE
 for (i in 1:nrow(av)){
   
 ifelse(av$mean[i]+av$sd[i]>1,av$ymax[i]<-1,av$ymax[i]<-av$mean[i]+av$sd[i])
 ifelse(av$mean[i]-av$sd[i]<0,av$ymin[i]<-0,av$ymin[i]<-av$mean[i]-av$sd[i])
 }
 
+hist_temps$mids
+colors<-c("11\u00B0C"= cols[1],"15\u00B0C"=cols[2] ,"19\u00B0C"=cols[3], "23.5\u00B0C"= cols[4])
+
 library(ggplot2)
-plot7<-ggplot(data = NULL, aes(x=x))+geom_line(aes(y=CInew1$mod.avg.pred, color="12\u00B0C"), lwd = 1)+  geom_line(aes(y=CInew2$mod.avg.pred, color="16\u00B0C"), lwd = 1) +
-  geom_line(aes(y=CInew3$mod.avg.pred, color="20\u00B0C"), lwd = 1) +geom_line(aes(y=CInew4$mod.avg.pred, color="24\u00B0C"), lwd = 1)+
-  geom_ribbon(aes(ymin=CInew1$lower.CL, ymax=CInew1$upper.CL), alpha=0.1, fill = cols[1],  color = cols[1], linetype = "dotted")+
-  geom_ribbon(aes(ymin=CInew2$lower.CL, ymax=CInew2$upper.CL), alpha=0.1, fill = cols[2],  color = cols[2], linetype = "dotted")+
-  geom_ribbon(aes(ymin=CInew3$lower.CL, ymax=CInew3$upper.CL), alpha=0.1, fill = cols[3],  color = cols[3], linetype = "dotted")+
-  geom_ribbon(aes(ymin=CInew4$lower.CL, ymax=CInew4$upper.CL), alpha=0.1, fill = cols[4],  color = cols[4], linetype = "dotted")+
-  geom_point(data=av[1:6,], aes(x=treat,y=mean),color=cols1[1])+geom_point(data=av[7:11,], aes(x=treat,y=mean),color=cols1[2])+
+plot7<-ggplot(data = NULL, aes(x=x))+geom_line(aes(y=CInew1$mod.avg.pred, color="11\u00B0C"), lwd = 1)+  geom_line(aes(y=CInew2$mod.avg.pred, color="15\u00B0C"), lwd = 1) +
+  geom_line(aes(y=CInew3$mod.avg.pred, color="19\u00B0C"), lwd = 1) +geom_line(aes(y=CInew4$mod.avg.pred, color="23.5\u00B0C"), lwd = 1)+
+  geom_ribbon(aes(ymin=CInew1$lower.CL, ymax=CInew1$upper.CL), alpha=0.3, fill = cols[1],  color = cols[1], linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew2$lower.CL, ymax=CInew2$upper.CL), alpha=0.3, fill = cols[2],  color = cols[2], linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew3$lower.CL, ymax=CInew3$upper.CL), alpha=0.3, fill = cols[3],  color = cols[3], linetype = "dotted")+
+  geom_ribbon(aes(ymin=CInew4$lower.CL, ymax=CInew4$upper.CL), alpha=0.3, fill = cols[4],  color = cols[4], linetype = "dotted")+
+  geom_point(data=av[1:5,], aes(x=treat,y=mean),color=cols1[1])+geom_point(data=av[6:11,], aes(x=treat,y=mean),color=cols1[2])+
   geom_point(data=av[12:16,], aes(x=treat,y=mean),color=cols1[3])+geom_point(data=av[17:21,], aes(x=treat,y=mean),color=cols1[4])+
-  geom_errorbar(data = av,aes(x=treat+runif(nrow(av),-5,5),ymin=ymin, ymax=ymax), width=.2, alpha=0.3)+
-  labs(x="Time out of water",y="Probability of Survival", color="Air Temperature", title= "35mm Prawn Survival")+scale_color_manual(values = colors)+
-  theme(plot.title = element_text(hjust = 0.5),panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", color = "grey50")) 
-runif(-5,5,nrow(av))
+  geom_errorbar(data = av,aes(x=treat,ymin=lower, ymax=upper), width=.2, alpha=0.4)+
+  labs(x="Time out of water",y="Probability of Survival", color="Air Temperature", title= "35mm Prawn Survival")+scale_color_manual(values = cols1)+
+  theme(    legend.position = c(.95, .95),
+            legend.justification = c("right", "top"),
+            legend.box.just = "right",
+            legend.margin = margin(6, 6, 6, 6),plot.title = element_text(hjust = 0.5),panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", color = "grey50"))
 
 
 setwd(here("figures"))

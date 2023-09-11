@@ -1,4 +1,5 @@
-##This code was written by Jacob Houtman for 
+##This code was written by Jacob Houtman for Prawn out of water: (Atkinson, Houtman, and Lewis).
+##
 
 
 #set working directory
@@ -134,7 +135,7 @@ dev.off()
 
 
 
-
+##DELETE \/
 # The same thing but for 40% lost (rather than 20% like above^)
 png(paste(Sys.Date(), "lost_bias_40.png", sep="_"), width=480, height=480, units = "px", pointsize=12)
 par(mfrow=c(3,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
@@ -155,7 +156,7 @@ dev.off()
 
 
 plot(NULL, xlim=c(-5,125),ylim=c(0,1),xlab="Treatment", ylab="Proportion Survived", main="Survival with different loss biases")
-legend(x=100,y=1,c("True survival","Dead lost","Alive lost","Equal lost"), pch=c(1,2,3,4), cex=0.5)
+legend(x=80,y=1,c("True survival","Dead lost","Alive lost","Equal lost"), pch=c(1,2,3,4), cex=0.5)
 points(c(0, 60, 120), y=c(0.9, 0.6,0.1))
 points(c(0, 60, 120), y=c(0.92, 0.65,0.12), pch = 2)
 points(c(0, 60, 120), y=c(0.88, 0.56,0.082), pch=3)

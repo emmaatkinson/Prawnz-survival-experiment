@@ -1,0 +1,12 @@
+,Best model,Best model(No small),Average model,Average model (No small),Main Effects
+(Intercept),0.129,0.096,0.133,0.1,0.222
+length,-0.12,-0.069,-0.127,-0.071,-0.153
+temp,-0.858,-0.843,-0.853,-0.84,-0.729
+treatment,-1.579,-1.581,-1.577,-1.569,-1.523
+length:temp,0.163,0.153,0.163,-0.094,0
+temp:treatment,-0.358,-0.359,-0.355,-0.35,0
+length:treatment,0,0,-0.042,0.152,0
+RE SD,0.8791,0.9342,NA,NA,0.8697
+Correlation,0.656206208,NA,0.656182337,NA,0.656098374
+Accuracy,0.790778599,NA,0.791213571,NA,0.789473684
+Max Deviance,0.047842991,NA,0,NA,0.050456233
