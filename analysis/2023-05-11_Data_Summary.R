@@ -15,6 +15,10 @@ trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
 banded_survival<-survival[!is.na(survival$treatment),]
 unbanded_survival<-survival[is.na(survival$treatment),]
 
+#T test comparing banded and unbanded 
+t.test(unbanded_survival$length,banded_survival$length)
+var(unbanded_survival$length,na.rm=T)
+
 #set working directory for figures
 setwd(here("figures"))
 
@@ -133,8 +137,7 @@ points(treatments,equal.lost(total.prawns,true.alive,0.2), pch=4)
 #Stop saving figures as a png
 dev.off()
 
-
-
+citation()
 ##DELETE \/
 # The same thing but for 40% lost (rather than 20% like above^)
 png(paste(Sys.Date(), "lost_bias_40.png", sep="_"), width=480, height=480, units = "px", pointsize=12)

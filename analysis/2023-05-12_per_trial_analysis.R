@@ -267,15 +267,15 @@ sum(is.na(survival$alive+survival$dead+survival$scavenged))
 
 #Bar graph of unbanded prawns per trial. 'unbanded' refers to the number of prawns with
 #no rostrum band after the trial
-setwd(here("figures"))
-png(paste(Sys.Date(), "unbanded_bar.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1,res=300)
+setwd(here("New-figures"))
+png(paste(Sys.Date(), "unbanded_bar.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(unbanded, xlab="Trial", ylab="Unbanded Prawns",main="Unbanded Prawns in each Trial", names=as.character(unique(trial$trial_number)), col=viridis(1,0.5))
 dev.off()
 
 #Number of each stage per trial
 setwd(here("figures"))
-png(paste(Sys.Date(), "stage_trial_barplot.png", sep="_"), width=2000, height=2000, units = "px", pointsize=1,res=300)
+png(paste(Sys.Date(), "stage_trial_barplot.png", sep="_"), width=800, height=800, units = "px", pointsize=12)
 par(mfrow=c(2,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(stage_0_per_trial,main= "Stage 0 prawns in each Trial",names=as.character(unique(trial$trial_number)), xlab="Trial", ylab="Stage 0 Prawns",col=viridis(4,0.5)[1])
 barplot(stage_1_per_trial,main= "Stage 1 prawns in each Trial", names=as.character(unique(trial$trial_number)),xlab="Trial", ylab="Stage 1 Prawns",col=viridis(4,0.5)[2])
@@ -284,8 +284,8 @@ barplot(stage_3_per_trial,main= "Stage 3 prawns in each Trial", names=as.charact
 dev.off()
 
 #lost, dead, scavenged, alive prawns per trial
-setwd(here("figures"))
-png(paste(Sys.Date(), "lost_prawns.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1,res=300)
+setwd(here("New-figures"))
+png(paste(Sys.Date(), "lost_prawns.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(lost_prawnz,main= "Lost prawns in each Trial", names=as.character(unique(trial$trial_number)), xlab="Trial", ylab="Lost Prawns",col=viridis(4,0.5)[1])
 dev.off()
@@ -326,7 +326,7 @@ rep_data<- data.frame(trial_repeated,condition,prawns)
 
 #create and save stacked barplot showing the number of each treatment in each trial 
 setwd(here("figures"))
-png(paste(Sys.Date(), "condition_barplot.png", sep="_"), width=2000, height=2000, units = "px", pointsize=1,res=300)
+png(paste(Sys.Date(), "condition_barplot.png", sep="_"), width=600, height=800, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 ggplot(rep_data, aes(fill=condition, y=prawns, x=trial_repeated)) + 
   geom_bar(position="stack", stat="identity")+xlab("Trial")+ylab("Prawns")+
@@ -352,7 +352,7 @@ p2<-ggplot(data=trial_df, aes(x=temperature, y=percent_alive))+geom_point()
 
 #Plot of lost per treatment over trial
 setwd(here("figures"))
-png(paste(Sys.Date(), "lost_by_treatment.png", sep="_"), width=4000, height=2000, units = "px", pointsize=1,res=300)
+png(paste(Sys.Date(), "lost_by_treatment.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(sort(trial$trial_number), lost_30,col=viridis(5)[2], xlab="Trial", ylab="Lost or Unbanded Prawns", ylim=c(-5,50), main="Prawns lost from each Treatment")
 points(sort(trial$trial_number),lost_120, col=viridis(5)[5])
@@ -364,13 +364,13 @@ dev.off()
 
 #
 setwd(here("figures"))
-png(paste(Sys.Date(), "lost_vs_quartile.png", sep="_"), width=2000, height=2000, units = "px", pointsize=1,res=300)
+png(paste(Sys.Date(), "lost_vs_quartile.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(quarts,lost_prawnz,main="Lost Prawns vs 25th Length percentile", xlab="25th Percentile of Length", ylab="Lost Prawns", col=viridis(1), ylim=c(-10,80))
 dev.off()
 
 setwd(here("figures"))
-png(paste(Sys.Date(), "lost_by_treatment_barplot.png", sep="_"), width=2000, height=2000, units = "px", pointsize=1,res=300)
+png(paste(Sys.Date(), "lost_by_treatment_barplot.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(c(sum(lost_immediate), sum(lost_30),sum(lost_60), sum(lost_90),sum(lost_120)), main="Lost prawns in each treatment",names=c("0","30","60","90","120"), ylab = "Lost Prawns", xlab="Treatment time ",ylim=c(0,250),col=viridis(1, 0.5))
 dev.off()
@@ -378,7 +378,7 @@ dev.off()
 #NOTE: for graph below there are ~21x5 points. Adding together 5 from the same trial=1. 
 #Points are the proportion of prawns lost from the trial that were lost from that trialxtreatment
 setwd(here("figures"))
-png(paste(Sys.Date(), "lost_by_treatment_and_trial_points.png", sep="_"), width=2000, height=2000, units = "px", pointsize=1, res=300)
+png(paste(Sys.Date(), "lost_by_treatment_and_trial_points.png", sep="_"), width=800, height=800, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot(NULL,xlim=c(-5,125),ylim=c(-0.05,1), ylab="Proportion lost or Unbanded", xlab="Treatment Time", main="Proportion of each Treatment Lost")
 
@@ -390,7 +390,7 @@ points(rep(120,21),lost_120/(trial$X2h_number), col=viridis(1))
 dev.off()
 
 setwd(here("figures"))
-png(paste(Sys.Date(), "lost_percent_by_treatment_barplots.png", sep="_"), width=800, height=600, units = "px", pointsize=1, res=300)
+png(paste(Sys.Date(), "lost_percent_by_treatment_barplots.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(c(sum(lost_immediate)/sum(trial$immediate_release_number), sum(lost_30)/sum(trial$X30min_number),
           sum(lost_60)/sum(trial$X1h_number), sum(lost_90)/sum(trial$X1h30min_numner),
@@ -434,14 +434,14 @@ barplot_df2<-matrix(c(barplot_df[1,]/(barplot_df[1,]+barplot_df[2,])),nrow=1)
 barplot_df2<-rbind(barplot_df2,c(1-c(barplot_df[1,]/(barplot_df[1,]+barplot_df[2,]))))
 colnames(barplot_df2)<-c("0","30","60","90","120")
 
-setwd(here("figures"))
-png(paste(Sys.Date(), "survival_treatment_barplot.png", sep="_"), width=800, height=600, units = "px", pointsize=1, res=300)
+setwd(here("New-figures"))
+png(paste(Sys.Date(), "survival_treatment_barplot.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(barplot_df2, beside=TRUE, col=viridis(2)[1:2],
         names.arg=c("0","30","60","90","120"),
         xlab="Time out of Water (minutes)", ylim=c(0,1), main="Prawn survival in each treatment")
 legend("top",c("Proportion of surviving Prawns","Proportion of dead Prawns"), fill=c(viridis(2)[1:2]), cex=0.8)
-
+dev.off()
 ##Survival Histogram Figures----
 setwd(here("data-clean"))
 
@@ -476,7 +476,7 @@ dev.off()
 cols=viridis(2,0.7)
 
 ##Temp
-png(paste(Sys.Date(), "temp_survival_histogram.png", sep="_"), width=900, height=600, units = "px", pointsize=12)
+png(paste(Sys.Date(), "temp_survival_histogram.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 l <- list(living$temp,not_living$temp)
 plotrix::multhist(l, breaks=pretty(10:26, n = 32),col = cols,xlab="Temperature",ylab="Number of Prawns",width=2, main="Prawn Survival by Temperature")
@@ -495,13 +495,13 @@ legend('topright',c("Living", "Dead"),fill=cols)
 abline(h=0)
 dev.off()
 
-#NO LONGER
-#png(paste(Sys.Date(), "treatment_survival_histogram.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
-#par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-#plot(hgA1, col = c1, main="Prawn Survival by Treatment", xlab="Time out of water", ylab="Number of prawns") # Plot 1st histogram using a transparent color
-#plot(hgB1, col = c2, add = TRUE) 
-#legend(95,900,c("Living", "Dead"),lty=1,lwd=4,col=c(c1,c2))
-#dev.off()
+NO LONGER
+png(paste(Sys.Date(), "treatment_survival_histogram.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+plot(hgA1, col = c1, main="Prawn Survival by Treatment", xlab="Time out of water", ylab="Number of prawns") # Plot 1st histogram using a transparent color
+plot(hgB1, col = c2, add = TRUE) 
+legend(95,900,c("Living", "Dead"),lty=1,lwd=4,col=c(c1,c2))
+dev.off()
 
 ##Length by stage 
 
@@ -575,9 +575,9 @@ post_exp_mort <-c(1/(sum(survival[which(survival$treatment==0),]$alive)/t0_pr_mo
 
 
 
-setwd(here("new-figures"))
-png(paste(Sys.Date(), "release_mortality_by_treatment.png", sep="_"), width=3000, height=2000, units = "px", pointsize=1, res=300)
-par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+setwd(here("New-figures"))
+png(paste(Sys.Date(), "release_mortality_by_treatment.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(post_exp_mort, names=c(0,30,60,90,120), xlab = "Time out of water (min)",
         ylab="Post release mortality", col=viridis(1), main="Post experiment mortality",ylim=c(0,0.16))
 dev.off()
@@ -609,9 +609,9 @@ colnames(rm_data) <- c("0","30","60","90","120")
 
 # Grouped barplot
 
-setwd(here("new-figures"))
+setwd(here("New-figures"))
 png(paste(Sys.Date(), "mortality_by_treatment_barplot.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
-par(mfrow=c(2,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 barplot(rm_data, 
         col=viridis(3,0.8) , 
         border="white", 
@@ -627,7 +627,7 @@ dev.off()
 
 ##Per treatment length hist----
 
-setwd(here("new-figures"))
+setwd(here("New-figures"))
 png(paste(Sys.Date(), "per_treatment_length_hist.png", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(3,2),mar=c(4,4,1,2), oma=c(0,0,4,0))
 hist(model_df_2[which(model_df_2$treatment==0),]$length,breaks=pretty(17.5:53.5, n = 69),col=viridis(6)[1],main="0 minute Length dist", 

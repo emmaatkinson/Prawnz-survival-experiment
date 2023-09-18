@@ -426,7 +426,6 @@ NEWDATAB<-NEWDATA6
 survival_predictor<-function(NEWDATA, NEWDATAA,NEWDATAB){
 
 NEWDATA$trial_trap<-rep(NA, nrow(NEWDATA))
-
 NEWDATA5<-NEWDATA
 NEWDATA5$trial_trap<-rep(0,nrow(NEWDATA))
 #
@@ -447,10 +446,16 @@ NEWDATAB5$trial_trap<-rep(0,nrow(NEWDATAB))
 # Predictions from each of the models in a set, and with averaged coefficients
 pred.se <- data.frame(average=predict(avgm, NEWDATA, se.fit = TRUE, type = "response"),
                       mod1=predict(model_6.1_1, NEWDATA5,re.form=NA, type = "response"),
-                      average2=predict(avgm, NEWDATAA, se.fit = TRUE, type = "response"),
-                      mod2=predict(model_6.1_1, NEWDATAA5,re.form=NA, type = "response"),
-                      average3=predict(avgm, NEWDATAB, se.fit = TRUE, type = "response"),
-                      mod3=predict(model_6.1_1, NEWDATAB5,re.form=NA, type = "response"))
+                      mod2=predict(model_3_1, NEWDATA5,re.form=NA, type = "response"),
+                      
+                     average2=predict(avgm, NEWDATAA, se.fit = TRUE, type = "response"),
+                     mod3=predict(model_6.1_1, NEWDATAA5,re.form=NA, type = "response"),
+                     mod4=predict(model_3_1, NEWDATAA5,re.form=NA, type = "response"),
+                      
+                     average3=predict(avgm, NEWDATAB, se.fit = TRUE, type = "response"),
+                     mod5=predict(model_6.1_1, NEWDATAB5,re.form=NA, type = "response"),
+                      mod6=predict(model_3_1, NEWDATAA5,re.form=NA, type = "response"))
+                      
                      #,
                      # mod2=predict(model_5.1_1, NEWDATA5, re.form=NA, type = "response"),
                      # mod3=predict(model_4.1_1, NEWDATA5, re.form=NA, type = "response"),
@@ -458,16 +463,19 @@ pred.se <- data.frame(average=predict(avgm, NEWDATA, se.fit = TRUE, type = "resp
                      # mod5=predict(model_6.2_1, NEWDATA5, re.form=NA, type = "response"))
 
 plot(NEWDATA$treatment,pred.se$average.fit, type="l", ylim=c(0,1),
-        lty = 2, col = 1, lwd = 1, ylab="Probability of survival", xlab="Treatment time (min)",
+        lty = 1, col = 1, lwd = 1, ylab="Probability of survival", xlab="Treatment time (min)",
         main=paste(unique(NEWDATA$length),"mm prawn survival"))
-lines(NEWDATA5$treatment,pred.se$mod1,col=1)
+lines(NEWDATA5$treatment,pred.se$mod1,lty=2)
+lines(NEWDATA5$treatment,pred.se$mod2,lty=3)
 
-lines(NEWDATAA5$treatment,pred.se$average2.fit,col=2,lty=2)
-lines(NEWDATAA5$treatment,pred.se$mod2,col=2)
 
-lines(NEWDATAB5$treatment,pred.se$average3.fit,col=3, lty=2)
-lines(NEWDATAB5$treatment,pred.se$mod3,col=3)
+lines(NEWDATAA5$treatment,pred.se$average2.fit,col=2,lty=1)
+lines(NEWDATAA5$treatment,pred.se$mod3,col=2,lty=2)
+lines(NEWDATAA5$treatment,pred.se$mod4,col=2,lty=3)
 
+lines(NEWDATAB5$treatment,pred.se$average3.fit,col=3, lty=1)
+lines(NEWDATAB5$treatment,pred.se$mod5,col=3,lty=2)
+lines(NEWDATAB5$treatment,pred.se$mod6,col=3,lty=3)
 
 #lines(NEWDATA5$treatment,pred.se$mod2,col=2)
 #lines(NEWDATA5$treatment,pred.se$mod3,col=3)
@@ -491,10 +499,13 @@ NEWDATA6<-data.frame(length=rep(23,30),temp=rep(22,30),treatment=seq(0,120,lengt
 
 
 NEWDATA1<-data.frame(length=rep(35,30),temp=rep(11,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
-NEWDATA2<-data.frame(length=rep(49,30),temp=rep(11,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
 NEWDATA4<-data.frame(length=rep(35,30),temp=rep(16,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
-NEWDATA5<-data.frame(length=rep(49,30),temp=rep(16,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
 NEWDATA7<-data.frame(length=rep(35,30),temp=rep(22,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+
+
+
+NEWDATA2<-data.frame(length=rep(49,30),temp=rep(11,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
+NEWDATA5<-data.frame(length=rep(49,30),temp=rep(16,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
 NEWDATA8<-data.frame(length=rep(49,30),temp=rep(22,30),treatment=seq(0,120,length.out=30), trial_trap=rep(NA, 30))
 
 
@@ -682,6 +693,7 @@ dev.off()
 library(here)
 library(lme4)
 library(MuMIn)
+library(glmmTMB)
 setwd(here('Data-clean'))
 model_df<-read.csv("2023_08_10_model_dataframe")
 
@@ -708,16 +720,17 @@ ms1 <- dredge(model_all, rank=BIC)
 confset.95p <- get.models(ms1, subset = weight >0)
 avgm<-model.avg(confset.95p, rank = BIC)
 
+avgm$coefArray
 ms1_nosmall <- dredge(model_all_nosmall, rank=BIC)
 confset.95p <- get.models(ms1_nosmall, subset = weight >0)
 avgm_nosmall<-model.avg(confset.95p, rank = BIC)
+avgm
 
 coefficients(avgm)
 coefficients(avgm_nosmall)[c(1,5,2,3,7,4,6)]
 fixef(model_best)
 fixef(model_main)
 fixef(model_best_nolength)
-
 
 round(2.1345,3)
 model_table<-data.frame(cbind(round(c(fixef(model_best),0),3),round(c(fixef(model_best_nolength),0),3),round(coefficients(avgm),3),
