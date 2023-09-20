@@ -602,70 +602,105 @@ dev.off()
 
 #Survival curves with temp x treat averages
 library(AICcmodavg)
+library(viridis)
 mean_length<-mean(model_df_2$length)
 hist_temps<-hist(trial$exp_set_temp_air,plot=FALSE, breaks= c(9,13,17,21,26))
 hist_temps$counts
 
 
+
 cols<-viridis(4)
 cols1<-viridis(4,alpha=0.5)
+
+#3 panel model-prediction figure----
+
+#This functon makes one of the three panels
+conf_maker<-function(LENGTH_DATA, mean_length){
+  
+#LENGTH_DATA is a subset of the survival data with only the specified length bin. 
+#It will be used to calculate per-treatment, temperature-binned, average survival.
+  
+#mean_length is used for prediction. 
+
+
+  
 CInew1<-modavgPred(list(model_6.1_1), newdata=data.frame(temp=rep(hist_temps$mids[1],120),length=rep(mean_length,120),treatment=c(1:120))) 
 CInew2<-modavgPred(list(model_6.1_1), newdata=data.frame(temp=rep(hist_temps$mids[2],120),length=rep(mean_length,120),treatment=c(1:120))) 
 CInew3<-modavgPred(list(model_6.1_1), newdata=data.frame(temp=rep(hist_temps$mids[3],120),length=rep(mean_length,120),treatment=c(1:120))) 
 CInew4<-modavgPred(list(model_6.1_1), newdata=data.frame(temp=rep(hist_temps$mids[4],120),length=rep(mean_length,120),treatment=c(1:120))) 
 
-x<-c(1:120)
 
-hist_temps$breaks
+
 
 colors<-c("11\u00B0C"= cols[1],"15\u00B0C"=cols[2] ,"19\u00B0C"=cols[3], "23.5\u00B0C"= cols[4])
-
-temp_12<-model_df_2[which(model_df_2$temp<=hist_temps$breaks[2]),][,c("treatment","alive")]
-temp_16<-model_df_2[which(model_df_2$temp>hist_temps$breaks[2] & 
-                               model_df_2$temp<=hist_temps$breaks[3]),][,c("treatment","alive")]
-temp_20<-model_df_2[which(model_df_2$temp>hist_temps$breaks[3] & 
-                                      model_df_2$temp<=hist_temps$breaks[4]),][,c("treatment","alive")]
-temp_24<-model_df_2[which(model_df_2$temp>hist_temps$breaks[4]),][,c("treatment","alive")]
-
-length(c(which(model_df_2$temp<=hist_temps$breaks[2]),which(model_df_2$temp>hist_temps$breaks[2] & model_df_2$temp<=hist_temps$breaks[3]),
-  which(model_df_2$temp>hist_temps$breaks[3] & model_df_2$temp<=hist_temps$breaks[4]),which(model_df_2$temp>hist_temps$breaks[4])))
-hist_temps$counts
-treatments<-sort(unique(temp_12$treatment))
+cols<-viridis(4)
+cols1<-viridis(4,alpha=0.5)
 
 
-confint<-function(df, t=c(0,30,60,90,120)){
-  
+LENGTH_DATA<-shorties
+temp_12<-LENGTH_DATA[which(LENGTH_DATA$temp<=hist_temps$breaks[2]),][,c("treatment","alive")]
+
+temp_16<-LENGTH_DATA[which(LENGTH_DATA$temp>hist_temps$breaks[2] & 
+                             LENGTH_DATA$temp<=hist_temps$breaks[3]),][,c("treatment","alive")]
+
+temp_20<-LENGTH_DATA[which(LENGTH_DATA$temp>hist_temps$breaks[3] & 
+                             LENGTH_DATA$temp<=hist_temps$breaks[4]),][,c("treatment","alive")]
+
+temp_24<-LENGTH_DATA[which(LENGTH_DATA$temp>hist_temps$breaks[4]),][,c("treatment","alive")]
+unique(temp_24$treatment)
+
+confint<-function(df,temp, t){
   N<-vector(length=length(t))
   vec_mean<-vector(length=length(t))
   vec_upper<-vector(length=length(t))
   vec_lower<-vector(length=length(t))
   
   for (i in 1:length(t)){
-    
-  N[i]=nrow(df[df$treatment==t[i],])
+  N[i]<-nrow(df[df$treatment==t[i],])
   vec_mean[i]<-mean(df[which(df$treatment==t[i]),]$alive)
   vec_upper[i]<-prop.test(x= sum(df[which(df$treatment==t[i]),]$alive),n=nrow(df[df$treatment==t[i],]))$conf.int[2]
   vec_lower[i]<-prop.test(x= sum(df[which(df$treatment==t[i]),]$alive),n=nrow(df[df$treatment==t[i],]))$conf.int[1]
-  
   }
-  
-  return(data.frame(treat=t,N=N,mean=vec_mean,lower=vec_lower,upper=vec_upper))
-  
+  return(data.frame(treat=t,temp=rep(temp,length(t)),N=N,mean=vec_mean,lower=vec_lower,upper=vec_upper))
 }
 
-av<-rbind(confint(temp_12), confint(temp_16,t=c(0,30,60,90,100,120)),confint(temp_20),confint(temp_24))
+av<-rbind(confint(temp_12,12,unique(temp_12$treatment)), confint(temp_16,16,unique(temp_16$treatment)),confint(temp_20,20,unique(temp_20$treatment)),confint(temp_24,24,unique(temp_24$treatment)))
+
+
+  return(ggplot(data = NULL, aes(x=x))+geom_line(aes(y=CInew1$mod.avg.pred, color="11\u00B0C"), lwd = 1)+  geom_line(aes(y=CInew2$mod.avg.pred, color="15\u00B0C"), lwd = 1) +
+           geom_line(aes(y=CInew3$mod.avg.pred, color="19\u00B0C"), lwd = 1) +geom_line(aes(y=CInew4$mod.avg.pred, color="23.5\u00B0C"), lwd = 1)+
+           geom_ribbon(aes(ymin=CInew1$lower.CL, ymax=CInew1$upper.CL), alpha=0.3, fill = cols[1],  color = cols[1], linetype = "dotted")+
+           geom_ribbon(aes(ymin=CInew2$lower.CL, ymax=CInew2$upper.CL), alpha=0.3, fill = cols[2],  color = cols[2], linetype = "dotted")+
+           geom_ribbon(aes(ymin=CInew3$lower.CL, ymax=CInew3$upper.CL), alpha=0.3, fill = cols[3],  color = cols[3], linetype = "dotted")+
+           geom_ribbon(aes(ymin=CInew4$lower.CL, ymax=CInew4$upper.CL), alpha=0.3, fill = cols[4],  color = cols[4], linetype = "dotted")+
+           geom_point(data=av[which(av$temp==12),], aes(x=treat,y=mean),color=cols1[1])+geom_point(data=av[which(av$temp==16),], aes(x=treat,y=mean),color=cols1[2])+
+           geom_point(data=av[which(av$temp==20),], aes(x=treat,y=mean),color=cols1[3])+geom_point(data=av[which(av$temp==24),], aes(x=treat,y=mean),color=cols1[4])+
+           geom_errorbar(data = av,aes(x=treat,ymin=lower, ymax=upper), width=.2, alpha=0.4)+
+           labs(x="Time out of water",y="Probability of Survival", color="Air Temperature", title= paste("Survival for",mean_length,"mm prawn"))+scale_color_manual(values = cols1)
+           #+theme(    legend.position = c(.95, .95),
+                     #legend.justification = c("right", "top"),
+                    # legend.box.just = "right",
+                     #legend.margin = margin(6, 6, 6, 6),plot.title = element_text(hjust = 0.5),panel.grid.major.y = element_line(color="grey"),panel.background = element_rect(fill = "white", color = "grey50"))
+)
+}
+
+shorties<-model_df_2[which(model_df_2$length<=27.5),]
+normies<-model_df_2[which(model_df_2$length>=27.5 & model_df_2$length<=36.5),]
+biggies<-model_df_2[which(model_df_2$length>=36.5),]
+install.packages("gridExtra")
+
+setwd(here("figures"))
+png(paste(Sys.Date(), "survival_by_temp_three_panel.png", sep="_"),width=1000,height=1200,  units = "px")
+par(mfrow=c(3,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
+
+gridExtra::grid.arrange(conf_maker(shorties, round(mean(shorties$length))),
+             conf_maker(normies, round(mean(normies$length))),
+             conf_maker(biggies, round(mean(biggies$length))))
+dev.off()
+library(viridis)
 
 #DELETE
-for (i in 1:nrow(av)){
-  
-ifelse(av$mean[i]+av$sd[i]>1,av$ymax[i]<-1,av$ymax[i]<-av$mean[i]+av$sd[i])
-ifelse(av$mean[i]-av$sd[i]<0,av$ymin[i]<-0,av$ymin[i]<-av$mean[i]-av$sd[i])
-}
-
-hist_temps$mids
 colors<-c("11\u00B0C"= cols[1],"15\u00B0C"=cols[2] ,"19\u00B0C"=cols[3], "23.5\u00B0C"= cols[4])
-
-library(ggplot2)
 plot7<-ggplot(data = NULL, aes(x=x))+geom_line(aes(y=CInew1$mod.avg.pred, color="11\u00B0C"), lwd = 1)+  geom_line(aes(y=CInew2$mod.avg.pred, color="15\u00B0C"), lwd = 1) +
   geom_line(aes(y=CInew3$mod.avg.pred, color="19\u00B0C"), lwd = 1) +geom_line(aes(y=CInew4$mod.avg.pred, color="23.5\u00B0C"), lwd = 1)+
   geom_ribbon(aes(ymin=CInew1$lower.CL, ymax=CInew1$upper.CL), alpha=0.3, fill = cols[1],  color = cols[1], linetype = "dotted")+
@@ -687,6 +722,12 @@ png(paste(Sys.Date(), "survival_by_temp_with_treat_av.png", sep="_"), width=3000
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 plot7
 dev.off()
+
+
+
+
+
+
 
 
 ##Model Table----

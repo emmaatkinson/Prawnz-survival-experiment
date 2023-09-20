@@ -7,13 +7,14 @@
 #rm(list=ls())
 #graphics.off()
 
-# Loading packages 
+# Loading packages ----
 library(tidyverse)
 library(here) # this package allows you to reproducibly set your directory
-
-# Use here() to set working directory 
+getwd()
+# Set WD ----
 setwd(here("data-raw"))
 
+#Read in raw data----
 ##The trial data files contains trial level information on our experiment 
 ##Each of the files contains data collected by one observer
 tdata_EA<-read.csv("prawnz_experiment_trial_data_entry_EA.csv")
@@ -35,25 +36,7 @@ rdata_KF<-read.csv("prawnz_experiment_reflex_data_entry_KF - prawnz_experiment_r
 rdata_KM<-read.csv("prawnz_experiment_reflex_data_entry_KM - prawnz_experiment_reflex_data_entry.csv")
 head(rdata_EA)
 
-
-##Add a coloumn to indicate the observer that collected the data
-rdata_EA["Person"]<-rep("EA",nrow(rdata_EA))
-rdata_KF["Person"]<-rep("KF",nrow(rdata_KF))
-rdata_KM["Person"]<-rep("KM",nrow(rdata_KM))
-
-sdata_EA["Person"]<-rep("EA",nrow(sdata_EA))
-sdata_KF["Person"]<-rep("KF",nrow(sdata_KF))
-sdata_KM["Person"]<-rep("KM",nrow(sdata_KM))
-
-tdata_EA["Person"]<-rep("EA",nrow(tdata_EA))
-tdata_KF["Person"]<-rep("KF",nrow(tdata_KF))
-tdata_KM["Person"]<-rep("KM",nrow(tdata_KM))
-
-##Merge dataframes collected by each observer into one.
-rdata_total<-rbind(rdata_EA, rdata_KF, rdata_KM)
-tdata_total<-rbind(tdata_EA, tdata_KF, tdata_KM)
-sdata_total<-rbind(sdata_EA, sdata_KF, sdata_KM)
-
+##Change Trial coordinate units ----
 ##Trial data includes lat and long coordinates at which each trap was set and hauled
 ##However, the data is in degrees, and seconds. This code converts those units into
 ##degrees and decimals of degrees. It does this by removing the first few characters, 
@@ -68,6 +51,21 @@ tdata_total$exp_haul_lat_2<-(50+as.numeric(sub('...', '', tdata_total$exp_haul_l
 tdata_total$exp_haul_lon_1<-(126+as.numeric(sub('....', '', tdata_total$exp_haul_lon_1))/60)
 tdata_total$exp_haul_lon_2<-(126+as.numeric(sub('....', '', tdata_total$exp_haul_lon_2))/60)
 
+
+#Add 'Observer' column and 'All ID' coloumn----
+##Add a coloumn to indicate the observer that collected the data
+rdata_EA["Observer"]<-rep("EA",nrow(rdata_EA))
+rdata_KF["Observer"]<-rep("KF",nrow(rdata_KF))
+rdata_KM["Observer"]<-rep("KM",nrow(rdata_KM))
+
+sdata_EA["Observer"]<-rep("EA",nrow(sdata_EA))
+sdata_KF["Observer"]<-rep("KF",nrow(sdata_KF))
+sdata_KM["Observer"]<-rep("KM",nrow(sdata_KM))
+
+tdata_EA["Observer"]<-rep("EA",nrow(tdata_EA))
+tdata_KF["Observer"]<-rep("KF",nrow(tdata_KF))
+tdata_KM["Observer"]<-rep("KM",nrow(tdata_KM))
+
 ##This creates an individual ID column. The column prawn_id gives the prawn number for that
 ##prawn in that trial. It starts at 1 for the first prawn entered in the data and 
 ## gos up to n (the number of prawns in that trial) for the last prawn. All_id includes
@@ -75,6 +73,13 @@ tdata_total$exp_haul_lon_2<-(126+as.numeric(sub('....', '', tdata_total$exp_haul
 sdata_total$All_id<-paste(sdata_total$trial_number,"-",sdata_total$trap_number,"-",sdata_total$prawn_id)
 rdata_total$All_id<-paste(rdata_total$trial_number,"-",rdata_total$trap_number,"-",rdata_total$prawn_id)
 
+##Merge dataframes collected by each observer into one----
+rdata_total<-rbind(rdata_EA, rdata_KF, rdata_KM)
+tdata_total<-rbind(tdata_EA, tdata_KF, tdata_KM)
+sdata_total<-rbind(sdata_EA, sdata_KF, sdata_KM)
+
+
+#Remove two trials----
 ##This removes two trials, 11 and 12, from the data set.
 rdata_total_2<-rdata_total[which(rdata_total$trial_number!=11),]
 tdata_total_2<-tdata_total[which(tdata_total$trial_number!=11),]
@@ -85,7 +90,7 @@ tdata_total_3<-tdata_total_2[which(tdata_total_2$trial_number!=12),]
 sdata_total_3<-sdata_total_2[which(sdata_total_2$trial_number!=12),]
 
 
-##Data cleaning
+##Data cleaning----
 bad_rows<-c(which(is.na(sdata_total_3$dead+sdata_total_3$alive+sdata_total_3$scavenged)),
             which(is.na(sdata_total_3$trap_number)))
 sdata_total_3[bad_rows,]
@@ -135,12 +140,18 @@ yes_length<-yes_length[!is.na(yes_length$treatment),]
 
 nrow(no_length)+nrow(yes_length)
 
+treatments<-c(0,30,60,90,100,120)
+prop_length_NA<-hist(no_length$treatment, breaks =c(0,15,45,75,95,105,125))$counts/hist(survival$treatment, breaks =c(0,15,45,75,95,105,125))$counts
 
+plot(treatments,prop_length_NA)
 chisq.test(t(data.frame(no_length=hist(no_length$treatment, breaks =c(0,15,45,75,95,105,125))$counts,
                       yes_length =hist(yes_length$treatment, breaks =c(0,15,45,75,95,105,125))$counts))
 )
 
+survival$trial_number==11
 ##DELETE?----
+
+##Make Model Dataframe----
 #Read data in
 reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
 survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
@@ -431,5 +442,4 @@ points(c(0, 60, 120), y=c(0.9, 0.6,0.1))
 points(c(0, 60, 120), y=c(0.92, 0.65,0.12), pch = 2)
 points(c(0, 60, 120), y=c(0.88, 0.56,0.082), pch=3)
 points(c(0, 60, 120), y=c(0.9, 0.6,0.1), pch=4)
-
 

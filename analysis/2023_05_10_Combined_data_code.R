@@ -99,12 +99,15 @@ rdata_total_3$score<-rowSums(rdata_total_3[6:15])
 ##Change working directory to desired location for new files
 setwd(here("data-clean"))
 
+nrow(sdata_total_4[which(sdata_total_4$trial_number==11),])
+tdata_total_3[tdata_total_3$trial_number==11,]
 
 ##Save clean data-frames to csv files.
 write.csv(rdata_total_3,"2023-05-09_prawn_combined_reflex_data.csv")
 write.csv(tdata_total_3,"2023-05-09_prawn_combined_trial_data.csv")
 write.csv(sdata_total_4,"2023-05-09_prawn_combined_survival_data.csv")
 
+sum(model_df_2$alive,na.rm = TRUE)/nrow(model_df_2)
 
 #Save clean data frames wihtout trials 11 and 12
 setwd(here("data-clean"))

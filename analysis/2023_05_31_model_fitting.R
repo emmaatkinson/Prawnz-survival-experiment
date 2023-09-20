@@ -22,7 +22,7 @@ model_df<-survival[(is.na(survival$treatment)==FALSE),]
 model_df$treatment<-as.integer(model_df$treatment)
 model_df<-model_df[order(model_df$trial_number,model_df$prawn_id),]
 model_df$trial_trap<-paste(model_df$trial_number,"-",model_df$trap_number)
-
+model_df_1<-model_df
 
 model_df_1$temp<-rep(0, nrow(model_df_1))
 n_trials<-nrow(trial)
