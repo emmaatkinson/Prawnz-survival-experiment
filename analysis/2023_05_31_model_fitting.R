@@ -202,6 +202,9 @@ model_best_nolength<-glmer(alive~length*temp+temp*treatment+(1|trial_trap),data=
 #Maximum model, no small prawns, so we can model average with it
 model_all_nosmall<-glmmTMB(alive~length*temp+treatment*length+temp*treatment+(1|trial_trap),data=model_df_nosmall,family=binomial,na.action="na.fail")
 
+#
+saveRDS(model_6.1_1, "mymodel.rds")
+
 #Dredge maximal model
 ms1 <- dredge(model_all, rank=BIC)
 confset.95p <- get.models(ms1, subset = weight >0)
@@ -299,14 +302,12 @@ max_dev_average<-0
 max_dev_best<-max(c(abs(max(avgm_pred-best_pred)),abs(min(avgm_pred-best_pred))))
 max_dev_main<-max(c(abs(max(avgm_pred-main_pred)),abs(min(avgm_pred-main_pred))))
 
-deviance=c(max_dev_average,max_dev_best,max_dev_main)
+deviance<-c(max_dev_average,max_dev_best,max_dev_main)
 
 model_table["Correlation",]<-c(correlation[2],NA,correlation[1],NA,correlation[3])
 
 model_table["Accuracy",]<-c(accuracy[2],NA,accuracy[1],NA,accuracy[3])
 model_table["Max Deviance",]<-c(deviance[2],NA,deviance[1],NA,deviance[3])
-
-model_table
 
 setwd(here("figures"))
 write.csv(model_table, paste(Sys.Date(),"model_comparison.csv",sep ="_"))

@@ -1,7 +1,7 @@
-setwd("/Users/jacobhoutman/Documents/Git Hub/Prawnz-survival-experiment")
-reflexes<-read.csv("data-clean/2023-05-09_prawn_combined_reflex_data.csv")
-survival<-read.csv("data-clean/2023-05-09_prawn_combined_survival_data.csv")
-trial<-read.csv("data-clean/2023-05-09_prawn_combined_trial_data.csv")
+setwd(here("data-clean"))
+reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
+survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
+trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
 
 
 library("tidyverse")
@@ -62,7 +62,7 @@ getwd()
 library(rnaturalearth)
 library(ggplot2)
 library(grid)
-install.packages('devtools')
+library(devtools)
 devtools::install_github("ropensci/rnaturalearthhires")
 
 # Download world polygon data
