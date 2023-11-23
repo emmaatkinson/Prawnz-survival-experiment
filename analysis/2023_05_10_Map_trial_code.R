@@ -2,8 +2,8 @@ setwd(here("data-clean"))
 reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
 survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
 trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
-
-
+getwd()
+library(here)
 library("tidyverse")
 library("googlesheets4")
 library("lubridate")
@@ -64,6 +64,9 @@ library(ggplot2)
 library(grid)
 library(devtools)
 devtools::install_github("ropensci/rnaturalearthhires")
+library(grid)
+library(purrr)
+library(raster)
 
 # Download world polygon data
 world <- ne_countries(scale = "large", returnclass = "sf")
@@ -82,17 +85,17 @@ s_edge<-45
 w_edge<--140
 e_edge<--122
 
-n_edge1<-51.3
-s_edge1<-50.3
-w_edge1<--127.5
-e_edge1<--125.5
+n_edge1<-51
+s_edge1<-50.5
+w_edge1<--127
+e_edge1<--126
 
 #Data frame for map
 world <- rnaturalearth::ne_countries(scale = 10, returnclass = "sf")
 
 #Labels and coordinates
-long<-c(-126, -124)
-lat<-c(49.5,53)
+long1<-c(-126, -124)
+lat1<-c(49.5,53)
 names<-c("VI","BC")
 
 
@@ -101,6 +104,27 @@ xx<-PROV[1,]$geometry[[1]][1]
 bc_boundary<-data.frame(xx[[1]][1])
 #remove the coast since that is included in the world data,
 bc_boundary1<-bc_boundary[4200:nrow(bc_boundary),]
+#DELETE
+provinces <- c("British Columbia")
+
+canada <- getData("GADM",country="CAN",level=1)
+
+ca.provinces <- canada[canada$NAME_1 %in% provinces,]
+
+ca.bbox <- bbox(ca.provinces)
+
+xlim <- c(ca.bbox[1,1],ca.bbox[1,2])
+ylim <- c(ca.bbox[2,1],ca.bbox[2,2])
+
+plot(ca.provinces, ylim=ylim,xlim=xlim)
+
+library(ggplot2)
+ggplot(ca.provinces,aes(x=long,y=lat, group=group))+
+  geom_path()+
+  coord_map()+
+  theme()
+
+
 
 
 # Create main plot
@@ -115,18 +139,18 @@ main_plot <- ggplot(data = world) +
             inherit.aes = FALSE)+
   #Add labels for BC and VI
   geom_text(label=names[1], 
-            x=long[1],
-            y=lat[1]
+            x=long1[1],
+            y=lat1[1]
             , size = 3, hjust=0, vjust=-1)+
   geom_text(label=names[2], 
-            x=long[2],
-            y=lat[2]
-            , size = 3, hjust=0, vjust=-1) +
-  geom_path(data=bc_boundary1, aes(X1,X2), colour = "darkgrey")
-main_plot
+            x=long1[2],
+            y=lat1[2]
+            , size = 3, hjust=0, vjust=-1) #+
+  geom_path(ca.provinces,aes(x=long,y=lat, group=group), colour = "darkgrey")
+rlang::last_trace()
 
 # Create an inset map
-inset_map <- ggplot(data = world) +
+ inset_map <- ggplot(data = world) +
   geom_sf() +
   coord_sf(xlim = c(w_edge1, e_edge1), ylim = c(s_edge1, n_edge1)) +
   geom_point(data=dfs1,aes(x=s_lon_1, y=s_lat_1), size=1, alpha=0.5)+
@@ -136,12 +160,12 @@ inset_map <- ggplot(data = world) +
 
 
 # Add the inset map to the main plot
-vp <- viewport(width = 0.37, height = 0.34, x = 0.48, y = 0.3)
+vp <- viewport(width = 0.37, height = 0.34, x = 0.48, y = 0.35)
 
 
 #Save as PNG file
 setwd(here("New-figures"))
-pdf(paste(Sys.Date(), "broughton_inset_map.pdf", sep="_"), width=7, height=11)
+tiff(paste(Sys.Date(), "broughton_inset_map.tiff", sep="_"), width=600, height=800)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
 print(main_plot)
 print(inset_map, vp = vp)

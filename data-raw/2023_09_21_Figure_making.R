@@ -2,7 +2,7 @@
 library(qpdf)
 library(viridis)
 
-
+getwd()
 
 #set working directory
 setwd(here("data-clean"))
