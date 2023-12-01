@@ -12,7 +12,7 @@ library("maps")
 library("ggmap")
 library(rgdal)
 library(maptools)
-
+setwd("/Users/jacobhoutman/Documents/Git Hub/Prawnz-survival-experiment/data-clean")
 #Define Largest and smallest latitude and longitude to set edges of the map
 n_edge<-max(max(append(trial$exp_set_lat_1,trial$exp_set_lat_2),na.rm=TRUE), max(append(trial$exp_haul_lat_1,trial$exp_haul_lat_2),na.rm=TRUE)) #select largest latitude, find a northern bound for edge of map
 s_edge<-min(min(append(trial$exp_set_lat_1,trial$exp_set_lat_2),na.rm=TRUE), min(append(trial$exp_haul_lat_1,trial$exp_haul_lat_2),na.rm=TRUE))#smallest latitude, find a southern bound for edge of map
@@ -67,17 +67,11 @@ devtools::install_github("ropensci/rnaturalearthhires")
 library(grid)
 library(purrr)
 library(raster)
+library(sf)
 
 # Download world polygon data
 world <- ne_countries(scale = "large", returnclass = "sf")
 world1<- ne_countries(scale = "large", returnclass = "sf")
-
-lakes110 <- ne_download(scale = 10, type = "admin_1_states_provinces", category = "cultural")
-sp::plot(lakes110)
-
-library(sf)
-states <- st_as_sf(map("province", plot = FALSE, fill = TRUE))
-head(states)
 
 # Define region of interest for the inset map (e.g. Europe)
 n_edge<-58
@@ -98,35 +92,6 @@ long1<-c(-126, -124)
 lat1<-c(49.5,53)
 names<-c("VI","BC")
 
-
-##Data frame for BC boundary
-xx<-PROV[1,]$geometry[[1]][1]
-bc_boundary<-data.frame(xx[[1]][1])
-#remove the coast since that is included in the world data,
-bc_boundary1<-bc_boundary[4200:nrow(bc_boundary),]
-#DELETE
-provinces <- c("British Columbia")
-
-canada <- getData("GADM",country="CAN",level=1)
-
-ca.provinces <- canada[canada$NAME_1 %in% provinces,]
-
-ca.bbox <- bbox(ca.provinces)
-
-xlim <- c(ca.bbox[1,1],ca.bbox[1,2])
-ylim <- c(ca.bbox[2,1],ca.bbox[2,2])
-
-plot(ca.provinces, ylim=ylim,xlim=xlim)
-
-library(ggplot2)
-ggplot(ca.provinces,aes(x=long,y=lat, group=group))+
-  geom_path()+
-  coord_map()+
-  theme()
-
-
-
-
 # Create main plot
 main_plot <- ggplot(data = world) +
   geom_sf() +
@@ -145,9 +110,7 @@ main_plot <- ggplot(data = world) +
   geom_text(label=names[2], 
             x=long1[2],
             y=lat1[2]
-            , size = 3, hjust=0, vjust=-1) #+
-  geom_path(ca.provinces,aes(x=long,y=lat, group=group), colour = "darkgrey")
-rlang::last_trace()
+            , size = 3, hjust=0, vjust=-1) 
 
 # Create an inset map
  inset_map <- ggplot(data = world) +
@@ -156,12 +119,9 @@ rlang::last_trace()
   geom_point(data=dfs1,aes(x=s_lon_1, y=s_lat_1), size=1, alpha=0.5)+
   theme_void()+
   theme(panel.border=element_rect(color = "black", linewidth = 1, fill=NA))
-    #theme(panel.background=element_blank(),panel.ontop = TRUE, = ggplot2::element_rect(color = "black", linewidth = 3))
-
 
 # Add the inset map to the main plot
 vp <- viewport(width = 0.37, height = 0.34, x = 0.48, y = 0.35)
-
 
 #Save as PNG file
 setwd(here("New-figures"))

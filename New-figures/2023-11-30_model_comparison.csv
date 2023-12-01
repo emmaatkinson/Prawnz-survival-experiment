@@ -1,0 +1,12 @@
+"","Best model","Best model(No small prawns)","Average model","Average model (No small prawns)","Main Effects"
+"(Intercept)",0.1,0.1,0.1,0.1,0.2
+"length",-0.1,-0.1,-0.1,-0.1,-0.2
+"temp",-0.9,-0.8,-0.9,-0.8,-0.7
+"treatment",-1.6,-1.6,-1.6,-1.6,-1.5
+"length:temp",0.2,0.2,0.2,-0.1,0
+"temp:treatment",-0.4,-0.4,-0.4,-0.4,0
+"length:treatment",0,0,0,0.2,0
+"RE SD",0.88,0.93,NA,NA,0.87
+"Correlation",0.656,NA,0.656,NA,0.656
+"Accuracy",0.791,NA,0.791,NA,0.791
+"Max Deviance",0.076,NA,0,NA,0.082
