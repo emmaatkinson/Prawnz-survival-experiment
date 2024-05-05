@@ -23,9 +23,9 @@ library(raster)
 library(sf)
 
 # Read in data #
-reflexes<-read.csv("2023-05-09_prawn_combined_reflex_data.csv")
-survival<-read.csv("2023-05-09_prawn_combined_survival_data.csv")
-trial<-read.csv("2023-05-09_prawn_combined_trial_data.csv")
+reflexes<-read.csv(here("data-clean","2023-05-09_prawn_combined_reflex_data.csv"))
+survival<-read.csv(here("data-clean","2023-05-09_prawn_combined_survival_data.csv"))
+trial<-read.csv(here("data-clean","2023-05-09_prawn_combined_trial_data.csv"))
 
 # Make new column to store temperature 
 survival$temp<-rep(0, nrow(survival))
@@ -122,7 +122,7 @@ for (i in 1:n_trials){
   lost_120[i]<-df$X2h_number-length(which(df1$treatment==120))
   
   #There was one trial with 100 minutes rather than 90. It was still recorded in '1h30min_numner'. 
-  lost_90[i]<-df$X1h30min_numner-length(which(df1$treatment==90))-length(which(df1$treatment==100))
+  lost_90[i]<-df$X1h30min_number-length(which(df1$treatment==90))-length(which(df1$treatment==100))
   
   #record the 1st quartile for carapace length per trial
   quarts[i]<-quantile(df1$length,probs = .25,na.rm = TRUE)
@@ -406,10 +406,18 @@ dev.off()
 setwd(here("New-figures"))
 tiff(paste(Sys.Date(), "lost_percent_by_treatment_barplots.tiff", sep="_"), width=800, height=600, units = "px", pointsize=12)
 par(mfrow=c(1,1),mar=c(4,4,1,2), oma=c(0,0,4,0))
-barplot(c(sum(lost_immediate)/sum(trial$immediate_release_number), sum(lost_30)/sum(trial$X30min_number),
+plot(c(sum(lost_immediate)/sum(trial$immediate_release_number), sum(lost_30)/sum(trial$X30min_number),
           sum(lost_60)/sum(trial$X1h_number), sum(lost_90)/sum(trial$X1h30min_numner),
           sum(lost_120)/sum(trial$X2h_number)),ylim=c(-0.03,1),names=c("0","30","60","90","120"),col=viridis(1,0.7),
         xlab="Treatment time (minutes out of water)",)
+plot(c(1:5), c(mean(lost_immediate/(trial$immediate_release_number)),
+            mean(lost_30/(trial$X30min_number)),
+            mean(lost_60/(trial$X1h_number)),
+            mean(lost_90/(trial$X1h30min_numner)),
+            mean(lost_120/(trial$X2h_number))),
+            ylim=c(0,1),
+            col=viridis(1)))
+
 points(rep(0.7,21),lost_immediate/(trial$immediate_release_number), col=viridis(1))
 points(rep(1.92,21),lost_30/(trial$X30min_number), col=viridis(1))
 points(rep(3.1,21),lost_60/(trial$X1h_number), col=viridis(1))
