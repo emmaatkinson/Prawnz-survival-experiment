@@ -49,7 +49,7 @@ p2<-read.csv(here("model-outputs-EMA","2024-04-29-predictions-TMB.csv"))
 cols<-diverge_hcl(5, h=c(246,40), c=96)
 smoothcols<-diverge_hcl(30, h=c(246,40), c=96)
 
-#heats<-blue2red(length(unique(model.dat$temp)))
+heats<-blue2red(length(unique(model.dat$temp)))
 heats<-rev(heat_hcl(length(unique(model.dat$temp)), c=c(80,30), l=c(30,90), power=c(1/5, 1.5)))
 
 #Function for colour ramp
