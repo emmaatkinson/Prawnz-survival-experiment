@@ -47,7 +47,7 @@ hist_temps<-hist(trial$exp_set_temp_air,plot=FALSE, breaks= c(9,13,17,21,26))
 
 # Colors 
 cols<-viridis(4)
-cols1<-viridis(4,alpha=0.5)
+cols1<-viridis(4, alpha=0.5)
 
 # This function makes one of the three panels. 
 # It takes a survival data set based on length section and a particular length.
