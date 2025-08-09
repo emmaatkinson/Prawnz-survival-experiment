@@ -25,11 +25,17 @@ library(tolerance)
 library(colorRamps)
 library(colorspace)
 library(Hmisc)
+library(PNWColors)
+
+rm(list=ls())
 
 # Read in data #
-reflexes<-read.csv(here("data-clean","2023-05-09_prawn_combined_reflex_data.csv"))
-survival<-read.csv(here("data-clean","2023-05-09_prawn_combined_survival_data.csv"))
-trial<-read.csv(here("data-clean","2023-05-09_prawn_combined_trial_data.csv"))
+reflexes<-read.csv(here("data-clean","2024-04-30-EMA_prawn_combined_reflex_data.csv"))
+survival<-read.csv(here("data-clean","2024-04-30-EMA_prawn_combined_survival_data.csv"))
+trial<-read.csv(here("data-clean","2024-04-30-EMA_prawn_combined_trial_data.csv"))
+
+# correct type in column name
+names(trial)[names(trial) == "X1h30min_numner"] <- "X1h30min_number"
 
 model.dat = read.csv(here("data-clean","2024-04-29_model_dataframe.csv"))
 
@@ -41,7 +47,6 @@ m2<-readRDS(here("model-outputs-EMA","treat-temp_temp-length_TMB.rds"))
 p1<-read.csv(here("model-outputs-EMA","2024-04-29-predictions-lme4.csv"))
 p2<-read.csv(here("model-outputs-EMA","2024-04-29-predictions-TMB.csv"))
 
-#### SET UP PLOTTING TOOLS ####
 
 # Colors 
 # cols<-viridis(5)
